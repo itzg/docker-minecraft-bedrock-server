@@ -12,6 +12,12 @@ exposing the default UDP port:
 docker run -d -e EULA=TRUE -p 19132:19132/udp itzg/minecraft-bedrock-server
 ```
 
+## Looking for a Java Edition Server
+
+For Minecraft Java Edition you'll need to use this image instead:
+
+[itzg/minecraft-server](https://hub.docker.com/r/itzg/minecraft-server)
+
 ## Environment Variables
 
 - `EULA` (no default) : must be set to `TRUE` to 
