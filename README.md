@@ -22,7 +22,7 @@ For Minecraft Java Edition you'll need to use this image instead:
 
 - `EULA` (no default) : must be set to `TRUE` to 
   accept the [Minecraft End User License Agreement](https://minecraft.net/terms)
-- `VERSION` (1.11) : can be set to a specific server version or just 1.11 or 1.12 to pick
+- `VERSION` (1.12) : can be set to a specific server version or just 1.11 or 1.12 to pick
   the latest known version of each
 - `UID` (default derived from `/data` owner) : can be set to a specific user ID to run the
   bedrock server process
