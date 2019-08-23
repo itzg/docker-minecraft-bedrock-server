@@ -1,0 +1,74 @@
+{
+  "server-name": {
+    "env": "SERVER_NAME"
+  },
+  "gamemode": {
+    "env": "GAMEMODE",
+    "allowed": ["survival","creative","adventure"],
+    "mappings": {
+      "0": "survival",
+      "1": "creative",
+      "2": "adventure"
+    }
+  },
+  "difficulty": {
+    "env": "DIFFICULTY",
+    "allowed": ["easy","peaceful","normal","hard"],
+    "mappings": {
+      "0": "peaceful",
+      "1": "easy",
+      "2": "normal",
+      "3": "hard"
+    }
+  },
+  "level-type": {
+    "env": "LEVEL_TYPE",
+    "allowed": ["DEFAULT","FLAT","LEGACY"],
+    "mappings": {
+      "flat": "FLAT",
+      "legacy": "LEGACY",
+      "default": "DEFAULT"
+    }
+  },
+  "allow-cheats": {
+    "env": "ALLOW_CHEATS",
+    "allowed": ["true","false"]
+  },
+  "max-players": {
+    "env": "MAX_PLAYERS"
+  },
+  "online-mode": {
+    "env": "ONLINE_MODE",
+    "allowed": ["true","false"]
+  },
+  "white-list": {
+    "env": "WHITE_LIST",
+    "allowed": ["true","false"]
+  },
+  "view-distance": {
+    "env": "VIEW_DISTANCE"
+  },
+  "tick-distance": {
+    "env": "TICK_DISTANCE"
+  },
+  "player-idle-timeout": {
+    "env": "PLAYER_IDLE_TIMEOUT"
+  },
+  "max-threads": {
+    "env": "MAX_THREADS"
+  },
+  "level-name": {
+    "env": "LEVEL_NAME"
+  },
+  "level-seed": {
+    "env": "LEVEL_SEED"
+  },
+  "default-player-permission-level": {
+    "env": "DEFAULT_PLAYER_PERMISSION_LEVEL",
+    "allowed": ["visitor","member","operator"]
+  },
+  "texturepack-required": {
+    "env": "TEXTUREPACK_REQUIRED",
+    "allowed": ["true","false"]
+  }
+}

@@ -20,6 +20,8 @@ For Minecraft Java Edition you'll need to use this image instead:
 
 ## Environment Variables
 
+### Container Specific
+
 - `EULA` (no default) : must be set to `TRUE` to 
   accept the [Minecraft End User License Agreement](https://minecraft.net/terms)
 - `VERSION` (1.12) : can be set to a specific server version or just 1.11 or 1.12 to pick
@@ -28,6 +30,36 @@ For Minecraft Java Edition you'll need to use this image instead:
   bedrock server process
 - `GID` (default derived from `/data` owner) : can be set to a specific group ID to run the
   bedrock server process
+
+### Server Properties
+
+The following environment variables will set the equivalent property in `server.properties`, where each [is described here](https://minecraft.gamepedia.com/Server.properties#Bedrock_Edition_3).
+
+- `SERVER_NAME`
+- `GAMEMODE`
+- `DIFFICULTY`
+- `LEVEL_TYPE`
+- `ALLOW_CHEATS`
+- `MAX_PLAYERS`
+- `ONLINE_MODE`
+- `WHITE_LIST`
+- `VIEW_DISTANCE`
+- `TICK_DISTANCE`
+- `PLAYER_IDLE_TIMEOUT`
+- `MAX_THREADS`
+- `LEVEL_NAME`
+- `LEVEL_SEED`
+- `DEFAULT_PLAYER_PERMISSION_LEVEL`
+- `TEXTUREPACK_REQUIRED`
+
+For example, to configure a flat, creative server instead of the default use:
+
+```bash
+docker run -d --name bds-flat-creative \
+  -e EULA=TRUE -e LEVEL_TYPE=flat -e GAMEMODE=creative \
+  -p 19132:19132/udp itzg/minecraft-bedrock-server
+```
+
 
 ## Exposed Ports
 
