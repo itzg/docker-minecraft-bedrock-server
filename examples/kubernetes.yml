@@ -1,0 +1,58 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: bds
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bds
+  labels:
+    app: bds
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: bds
+      labels:
+        app: bds
+    spec:
+      containers:
+        - name: bds
+          image: itzg/minecraft-bedrock-server
+          env:
+            - name: EULA
+              value: "TRUE"
+            - name: GAMEMODE
+              value: survival
+            - name: DIFFICULTY
+              value: normal
+          volumeMounts:
+            - mountPath: /data
+              name: data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: bds
+  selector:
+    matchLabels:
+      app: bds
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bds
+spec:
+  selector:
+    app: bds
+  ports:
+    - port: 19132
+      protocol: UDP
+  type: LoadBalancer

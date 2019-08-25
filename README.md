@@ -60,7 +60,6 @@ docker run -d --name bds-flat-creative \
   -p 19132:19132/udp itzg/minecraft-bedrock-server
 ```
 
-
 ## Exposed Ports
 
 - **UDP** 19132 : the Bedrock server port. 
@@ -77,3 +76,33 @@ When running the container on your LAN, you can find and connect to the dedicate
 in the "LAN Games" part of the "Friends" tab, such as:
 
 ![](docs/example-client.jpg)
+
+## Deploying with Kubernetes
+
+The [examples](examples) directory contains [an example Kubernetes manifest file](examples/kubernetes.yml) that declares:
+- a peristent volume claim (using default storage class)
+- a pod deployment that uses the declared PVC
+- a service of type LoadBalancer
+
+The pod deployment includes some examples of configuring the server properties via environment variables:
+```yaml
+env:
+- name: EULA
+  value: "TRUE"
+- name: GAMEMODE
+  value: survival
+- name: DIFFICULTY
+  value: normal
+```
+
+The file is deploy-able as-is on most clusters, but has been confirmed on [Docker for Desktop](https://docs.docker.com/docker-for-windows/kubernetes/) and [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine/docs/):
+
+```bash
+kubectl apply -f examples/kubernetes.yml
+```
+
+You can follow the logs of the deployment using:
+
+```bash
+kubectl logs -f deployment/bds
+```
