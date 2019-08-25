@@ -27,6 +27,7 @@ spec:
       containers:
         - name: bds
           image: itzg/minecraft-bedrock-server
+          imagePullPolicy: Always
           env:
             - name: EULA
               value: "TRUE"
