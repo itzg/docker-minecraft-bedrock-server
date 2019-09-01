@@ -11,21 +11,32 @@ fi
 set -e
 
 case ${VERSION} in
-  1.11)
+  1.11|PREVIOUS)
     VERSION=1.11.4.2
     ;;
   1.12)
     VERSION=1.12.0.28
     ;;
+  *)
+    DOWNLOAD_URL=$(restify --attribute=data-platform=serverBedrockLinux https://www.minecraft.net/en-us/download/server/bedrock/ | jq -r '.[0].href')
+    if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
+      VERSION=${BASH_REMATCH[1]}
+    else
+      echo "Failed to process download URL ${DOWNLOAD_URL}"
+      exit 2
+    fi
+    ;;
 esac
 
-if [ ! -f bedrock_server-${VERSION} ]; then
+if [ ! -f "bedrock_server-${VERSION}" ]; then
 
-  DOWNLOAD_URL=https://minecraft.azureedge.net/bin-linux/bedrock-server-${VERSION}.zip
+  if [[ ! ${DOWNLOAD_URL} ]]; then
+    DOWNLOAD_URL=https://minecraft.azureedge.net/bin-linux/bedrock-server-${VERSION}.zip
+  fi
 
-  TMP_ZIP=/tmp/$(basename ${DOWNLOAD_URL})
+  TMP_ZIP=/tmp/$(basename "${DOWNLOAD_URL}")
 
-  echo "Downloading Bedrock server ${VERSION} ..."
+  echo "Downloading Bedrock server version ${VERSION} ..."
   curl -o ${TMP_ZIP} -fsSL ${DOWNLOAD_URL}
 
   # remove only binaries to allow for an upgrade of those

@@ -27,6 +27,9 @@ RUN easy-add --file entrypoint-demoter --from https://github.com/itzg/entrypoint
 ARG SET_PROPERTY_VERSION=0.1.1
 RUN easy-add --file set-property --from https://github.com/itzg/set-property/releases/download/${SET_PROPERTY_VERSION}/set-property_${SET_PROPERTY_VERSION}_linux_${ARCH}.tar.gz
 
+ARG RESTIFY_VERSION=1.2.0
+RUN easy-add --file restify --from https://github.com/itzg/restify/releases/download/${RESTIFY_VERSION}/restify_${RESTIFY_VERSION}_linux_amd64.tar.gz
+
 COPY *.sh /opt/
 
 COPY property-definitions.json /etc/bds-property-definitions.json
@@ -34,4 +37,4 @@ COPY property-definitions.json /etc/bds-property-definitions.json
 # Available versions listed at
 # https://minecraft.gamepedia.com/Bedrock_Edition_1.11.0
 # https://minecraft.gamepedia.com/Bedrock_Edition_1.12.0
-ENV VERSION=1.12
+ENV VERSION=LATEST
