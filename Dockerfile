@@ -21,7 +21,7 @@ ARG EASY_ADD_VERSION=0.2.0
 ADD https://github.com/itzg/easy-add/releases/download/${EASY_ADD_VERSION}/easy-add_${EASY_ADD_VERSION}_linux_${ARCH} /usr/local/bin/easy-add
 RUN chmod +x /usr/local/bin/easy-add
 
-ARG DEMOTER_VERSION=0.2.0
+ARG DEMOTER_VERSION=0.2.1
 RUN easy-add --file entrypoint-demoter --from https://github.com/itzg/entrypoint-demoter/releases/download/${DEMOTER_VERSION}/entrypoint-demoter_${DEMOTER_VERSION}_Linux_${ARCH}.tar.gz
 
 ARG SET_PROPERTY_VERSION=0.1.1
