@@ -13,11 +13,14 @@ fi
 set -e
 
 case ${VERSION} in
-  1.11|PREVIOUS)
+  1.11)
     VERSION=1.11.4.2
     ;;
-  1.12)
+  1.12|PREVIOUS)
     VERSION=1.12.0.28
+    ;;
+  1.13)
+    VERSION=1.13.0.34
     ;;
   *)
     DOWNLOAD_URL=$(restify --attribute=data-platform=serverBedrockLinux https://www.minecraft.net/en-us/download/server/bedrock/ | jq -r '.[0].href')
