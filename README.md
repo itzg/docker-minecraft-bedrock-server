@@ -40,6 +40,7 @@ For Minecraft Java Edition you'll need to use this image instead:
 The following environment variables will set the equivalent property in `server.properties`, where each [is described here](https://minecraft.gamepedia.com/Server.properties#Bedrock_Edition_3).
 
 - `SERVER_NAME`
+- `SERVER_PORT`
 - `GAMEMODE`
 - `DIFFICULTY`
 - `LEVEL_TYPE`
