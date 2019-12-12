@@ -30,6 +30,7 @@ For Minecraft Java Edition you'll need to use this image instead:
   - `1.11` : the latest version of 1.11
   - `1.12` : the latest version of 1.12
   - `1.13` : the latest version of 1.13
+  - `1.14` : the latest version of 1.14
 - `UID` (default derived from `/data` owner) : can be set to a specific user ID to run the
   bedrock server process
 - `GID` (default derived from `/data` owner) : can be set to a specific group ID to run the
