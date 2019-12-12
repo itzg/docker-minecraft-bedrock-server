@@ -38,4 +38,5 @@ COPY property-definitions.json /etc/bds-property-definitions.json
 # https://minecraft.gamepedia.com/Bedrock_Edition_1.11.0
 # https://minecraft.gamepedia.com/Bedrock_Edition_1.12.0
 # https://minecraft.gamepedia.com/Bedrock_Edition_1.13.0
+# https://minecraft.gamepedia.com/Bedrock_Edition_1.14.0
 ENV VERSION=LATEST
