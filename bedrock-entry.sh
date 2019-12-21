@@ -23,7 +23,7 @@ case ${VERSION} in
     VERSION=1.13.0.34
     ;;
   1.14)
-    VERSION=1.14.0.9
+    VERSION=1.14.1.4
     ;;
   *)
     DOWNLOAD_URL=$(restify --attribute=data-platform=serverBedrockLinux https://www.minecraft.net/en-us/download/server/bedrock/ | jq -r '.[0].href')
