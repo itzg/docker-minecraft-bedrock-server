@@ -26,7 +26,12 @@ case ${VERSION} in
     VERSION=1.14.30.2
     ;;
   *)
-    DOWNLOAD_URL=$(restify --attribute=data-bi-prtid=serverBedrockLinux https://www.minecraft.net/en-us/download/server/bedrock/ | jq -r '.[0].href')
+    for a in data-bi-prtid data-platform; do
+      DOWNLOAD_URL=$(restify --attribute=${a}=serverBedrockLinux https://www.minecraft.net/en-us/download/server/bedrock/ 2> /dev/null | jq -r '.[0].href' || echo '')
+      if [[ ${DOWNLOAD_URL} ]]; then
+        break
+      fi
+    done
     if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
       VERSION=${BASH_REMATCH[1]}
     else
