@@ -23,10 +23,10 @@ case ${VERSION} in
     VERSION=1.13.0.34
     ;;
   1.14)
-    VERSION=1.14.1.4
+    VERSION=1.14.30.2
     ;;
   *)
-    DOWNLOAD_URL=$(restify --attribute=data-platform=serverBedrockLinux https://www.minecraft.net/en-us/download/server/bedrock/ | jq -r '.[0].href')
+    DOWNLOAD_URL=$(restify --attribute=data-bi-prtid=serverBedrockLinux https://www.minecraft.net/en-us/download/server/bedrock/ | jq -r '.[0].href')
     if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
       VERSION=${BASH_REMATCH[1]}
     else
