@@ -1,5 +1,7 @@
 #!/bin/bash
 
+downloadPage=https://www.minecraft.net/en-us/download/server/bedrock/
+
 if [[ ${EULA^^} != TRUE ]]; then
   echo
   echo "EULA must be set to TRUE to indicate agreement with the Minecraft End User License"
@@ -27,7 +29,7 @@ case ${VERSION} in
     ;;
   *)
     for a in data-bi-prtid data-platform; do
-      DOWNLOAD_URL=$(restify --attribute=${a}=serverBedrockLinux https://www.minecraft.net/en-us/download/server/bedrock/ 2> /dev/null | jq -r '.[0].href' || echo '')
+      DOWNLOAD_URL=$(restify --attribute=${a}=serverBedrockLinux ${downloadPage} 2> /tmp/restify.out | jq -r '.[0].href' || echo '')
       if [[ ${DOWNLOAD_URL} ]]; then
         break
       fi
@@ -35,7 +37,8 @@ case ${VERSION} in
     if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
       VERSION=${BASH_REMATCH[1]}
     else
-      echo "Failed to process download URL ${DOWNLOAD_URL}"
+      echo "Failed to extract download URL '${DOWNLOAD_URL}' from ${downloadPage}"
+      cat /tmp/restify.out
       exit 2
     fi
     ;;

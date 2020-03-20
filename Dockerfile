@@ -1,5 +1,6 @@
 FROM debian
 
+# ARCH is only set to avoid repetition in Dockerfile since the binary download only supports amd64
 ARG ARCH=amd64
 
 RUN apt-get update && \
@@ -17,16 +18,15 @@ WORKDIR /data
 
 ENTRYPOINT ["/usr/local/bin/entrypoint-demoter", "--match", "/data", "--debug", "--stdin-on-term", "stop", "/opt/bedrock-entry.sh"]
 
-ARG EASY_ADD_VERSION=0.5.0
-ADD https://github.com/itzg/easy-add/releases/download/${EASY_ADD_VERSION}/easy-add_${EASY_ADD_VERSION}_linux_${ARCH} /usr/local/bin/easy-add
+ARG EASY_ADD_VERSION=0.7.0
+ADD https://github.com/itzg/easy-add/releases/download/${EASY_ADD_VERSION}/easy-add_linux_${ARCH} /usr/local/bin/easy-add
 RUN chmod +x /usr/local/bin/easy-add
 
-RUN easy-add --var version=0.2.1 --var app=entrypoint-demoter --file entrypoint-demoter --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_Linux_{{.arch}}.tar.gz
+RUN easy-add --var version=0.2.1 --var app=entrypoint-demoter --file {{.app}} --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${ARCH}.tar.gz
 
-RUN easy-add --var version=0.1.1 --var app=set-property --file set-property --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
+RUN easy-add --var version=0.1.1 --var app=set-property --file {{.app}} --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${ARCH}.tar.gz
 
-ARG RESTIFY_VERSION=1.2.0
-RUN easy-add --var version=1.2.0 --var app=restify --file restify --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
+RUN easy-add --var version=1.2.0 --var app=restify --file {{.app}} --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${ARCH}.tar.gz
 
 COPY *.sh /opt/
 
