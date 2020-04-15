@@ -11,6 +11,8 @@ services:
       - 19132:19132/udp
     volumes:
       - bds:/data
+    stdin_open: true
+    tty: true
 
 volumes:
   bds: {}

@@ -9,7 +9,7 @@ The following starts a Bedrock Dedicated Server running a default version and
 exposing the default UDP port: 
 
 ```bash
-docker run -d -e EULA=TRUE -p 19132:19132/udp itzg/minecraft-bedrock-server
+docker run -d -it -e EULA=TRUE -p 19132:19132/udp itzg/minecraft-bedrock-server
 ```
 
 ## Looking for a Java Edition Server
@@ -61,7 +61,7 @@ The following environment variables will set the equivalent property in `server.
 For example, to configure a flat, creative server instead of the default use:
 
 ```bash
-docker run -d --name bds-flat-creative \
+docker run -d -it --name bds-flat-creative \
   -e EULA=TRUE -e LEVEL_TYPE=flat -e GAMEMODE=creative \
   -p 19132:19132/udp itzg/minecraft-bedrock-server
 ```
