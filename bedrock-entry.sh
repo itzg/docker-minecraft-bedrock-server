@@ -25,7 +25,7 @@ case ${VERSION} in
     VERSION=1.13.0.34
     ;;
   1.14)
-    VERSION=1.14.30.2
+    VERSION=1.14.60.5
     ;;
   *)
     for a in data-bi-prtid data-platform; do
