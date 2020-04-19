@@ -7,6 +7,12 @@ services:
       EULA: "TRUE"
       GAMEMODE: survival
       DIFFICULTY: normal
+    healthcheck:
+      test: ["CMD", "nc", "-zu", "127.0.0.1", "19132"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 300s
     ports:
       - 19132:19132/udp
     volumes:

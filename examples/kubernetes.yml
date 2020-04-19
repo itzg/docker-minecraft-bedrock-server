@@ -38,6 +38,30 @@ spec:
           volumeMounts:
             - mountPath: /data
               name: data
+          livenessProbe:
+            exec:
+              command: ["nc", "-zu", "127.0.0.1", "19132"]
+            initialDelaySeconds: 30
+            successThreshold: 1
+            failureThreshold: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          startupProbe:
+            exec:
+              command: ["nc", "-zu", "127.0.0.1", "19132"]
+            initialDelaySeconds: 30
+            successThreshold: 1
+            failureThreshold: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command: ["nc", "-zu", "127.0.0.1", "19132"]
+            initialDelaySeconds: 30
+            successThreshold: 1
+            failureThreshold: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
       volumes:
         - name: data
           persistentVolumeClaim:

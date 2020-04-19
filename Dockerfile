@@ -8,6 +8,7 @@ RUN apt-get update && \
     curl \
     unzip \
     jq \
+    netcat \
     && apt-get clean
 
 EXPOSE 19132/udp
