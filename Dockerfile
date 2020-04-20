@@ -28,6 +28,8 @@ RUN easy-add --var version=0.1.1 --var app=set-property --file {{.app}} --from h
 
 RUN easy-add --var version=1.2.0 --var app=restify --file {{.app}} --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${ARCH}.tar.gz
 
+RUN easy-add --var version=0.5.0 --var app=mc-monitor --file {{.app}} --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${ARCH}.tar.gz
+
 COPY *.sh /opt/
 
 COPY property-definitions.json /etc/bds-property-definitions.json
@@ -37,4 +39,7 @@ COPY property-definitions.json /etc/bds-property-definitions.json
 # https://minecraft.gamepedia.com/Bedrock_Edition_1.12.0
 # https://minecraft.gamepedia.com/Bedrock_Edition_1.13.0
 # https://minecraft.gamepedia.com/Bedrock_Edition_1.14.0
-ENV VERSION=LATEST
+ENV VERSION=LATEST \
+    SERVER_PORT=19132
+
+HEALTHCHECK --start-period=1m CMD /usr/local/bin/mc-monitor status-bedrock --host localhost --port $SERVER_PORT
