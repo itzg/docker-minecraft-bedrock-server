@@ -83,6 +83,10 @@ in the "LAN Games" part of the "Friends" tab, such as:
 
 ![](docs/example-client.jpg)
 
+## More information
+
+For more information about managing Bedrock Dedicated Servers in general, [check out this Reddit post](https://old.reddit.com/user/ProfessorValko/comments/9f438p/bedrock_dedicated_server_tutorial/).
+
 ## Deploying with Docker Compose
 
 The [examples](examples) directory contains [an example Docker compose file](examples/docker-compose.yml) that declares:
