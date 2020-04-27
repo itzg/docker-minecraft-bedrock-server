@@ -38,24 +38,30 @@ spec:
           volumeMounts:
             - mountPath: /data
               name: data
-        livenessProbe:
-          exec:
-            command: 
-              - /usr/local/bin/mc-monitor
-              - status-bedrock 
-              - --host localhost
-              - --port 19132
-          initialDelaySeconds: 10
-          timeoutSeconds: 10
-        readinessProbe:
-          exec:
-            command: 
-              - /usr/local/bin/mc-monitor
-              - status-bedrock 
-              - --host localhost
-              - --port 19132
-          initialDelaySeconds: 10
-          periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: 
+                - /usr/local/bin/mc-monitor
+                - status-bedrock 
+                - --host 
+                - 127.0.0.1
+                - --port
+                - "19132"
+            initialDelaySeconds: 120
+            timeoutSeconds: 10
+            failureThreshold: 10
+          readinessProbe:
+            exec:
+              command: 
+                - /usr/local/bin/mc-monitor
+                - status-bedrock 
+                - --host 
+                - 127.0.0.1
+                - --port 
+                - "19132"
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            failureThreshold: 10
       volumes:
         - name: data
           persistentVolumeClaim:
