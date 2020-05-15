@@ -1,74 +1,53 @@
 ---
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: bds
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: bds
   labels:
     app: bds
+  name: bds
 spec:
+  # never more than 1 since BDS is not horizontally scalable
   replicas: 1
+  serviceName: bds
+  selector:
+    matchLabels:
+      app: bds
   template:
     metadata:
-      name: bds
       labels:
         app: bds
     spec:
       containers:
-        - name: bds
+        - name: main
           image: itzg/minecraft-bedrock-server
-          imagePullPolicy: Always
-          env:
-            - name: EULA
-              value: "TRUE"
-            - name: GAMEMODE
-              value: survival
-            - name: DIFFICULTY
-              value: normal
           volumeMounts:
             - mountPath: /data
               name: data
-          livenessProbe:
+          env:
+            - name: EULA
+              value: "TRUE"
+          ports:
+            - containerPort: 19132
+              protocol: UDP
+          readinessProbe: &probe
             exec:
-              command: 
-                - /usr/local/bin/mc-monitor
-                - status-bedrock 
-                - --host 
+              command:
+                - mc-monitor
+                - status-bedrock
+                - --host
+                # force health check against IPv4 port
                 - 127.0.0.1
-                - --port
-                - "19132"
-            initialDelaySeconds: 120
-            timeoutSeconds: 10
-            failureThreshold: 10
-          readinessProbe:
-            exec:
-              command: 
-                - /usr/local/bin/mc-monitor
-                - status-bedrock 
-                - --host 
-                - 127.0.0.1
-                - --port 
-                - "19132"
-            initialDelaySeconds: 120
-            periodSeconds: 10
-            failureThreshold: 10
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: bds
-  selector:
-    matchLabels:
-      app: bds
+            initialDelaySeconds: 30
+          livenessProbe: *probe
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
@@ -80,4 +59,9 @@ spec:
   ports:
     - port: 19132
       protocol: UDP
-  type: LoadBalancer
+  ipFamily: IPv4
+  # Use LoadBalancer if running on a provider that supports that
+#  type: LoadBalancer
+  # or use NodePort on a non-managed system;
+  # however, you'll need to lookup port assigned to the service
+  type: NodePort
