@@ -1,0 +1,77 @@
+# WARNING: This does not currently account for the potential of the world being saved in 
+#   the middle of a change to the files on disk. The only protection is choosing a time 
+#   for backups that is unlikely to be in use. 
+#
+# NOTE: The save command may be a way around this and is under investigation:
+#   https://minecraft.gamepedia.com/Commands/save
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-to-s3-bedrock
+  labels:
+    role: backup
+data:
+  # https://github.com/flickerfly/docker-backup-to-s3/blob/master/README.md
+  CRON_SCHEDULE: '0 12 * * *'
+  S3_PATH: s3://mybucket/bedrock/
+  AWS_DEFAULT_REGION: us-east-1
+  # Pass this to the S3 command
+  PARAMS: ""
+  PREFIX: bedrock
+  DATA_PATH: /data/
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backup-to-s3-bedrock
+  labels:
+    role: backup
+data:
+  # https://github.com/flickerfly/docker-backup-to-s3/blob/master/README.md
+  AES_PASSPHRASE: BASE64-ENCODED STRING
+  AWS_ACCESS_KEY_ID: BASE64-ENCODED STRING
+  AWS_SECRET_ACCESS_KEY: BASE64-ENCODED STRING 
+
+---
+# Setup the Deployment of a pod that will do the work.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bds-backup
+  labels:
+    role: backup
+    app: bedrock
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      role: backup
+      app: bedrock
+  template:
+    metadata:
+      labels:
+        app: bedrock
+        role: backup
+    spec:
+      containers:
+        - name: backup-to-s3
+          image: jritchie/backup-to-s3
+          args: 
+            - schedule
+          volumeMounts:
+            - name: bds
+              mountPath: /data
+          envFrom:
+            - configMapRef:
+                name: backup-to-s3-bedrock
+            - secretRef:
+                name: backup-to-s3-bedrock
+      volumes:
+        - name: bds
+          persistentVolumeClaim:
+            claimName: bds
+            readOnly: true
