@@ -1,4 +1,10 @@
-# IMPORTANT: Be sure to set the VERSION variable in the Job definition with the name of the backup file to be restored in S3
+# IMPORTANT: Be sure to set the VERSION variable in the Job definition 
+#   with the name of the backup file to be restored in S3
+#
+# WARNING: It is best practice to scale down your minecraft deployment
+#   to assure you have no server pods running before a restore. This is 
+#   currenly a manual task.
+
 ---
 apiVersion: v1
 kind: Namespace
