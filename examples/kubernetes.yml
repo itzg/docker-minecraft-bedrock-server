@@ -1,4 +1,48 @@
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minecraft-bedrock
+  labels:
+    role: service-config
+    app: bds
+data:
+  # Find more options at https://github.com/itzg/docker-minecraft-bedrock-server#server-properties
+  # Remove # from in front of line if changing from default values.
+  EULA: "TRUE" # Must accept EULA to use this minecraft server
+  #GAMEMODE: "survival" # Options: survival, creative, adventure
+  #DIFFICULTY: "easy" # Options: peaceful, easy, normal, hard
+  #DEFAULT_PLAYER_PERMISSION_LEVEL: "member" # Options: visitor, member, operator
+  #LEVEL_NAME: "my_minecraft_world"
+  #LEVEL_SEED: "33480944"
+  #SERVER_NAME: "my_minecraft_server"
+  #SERVER_PORT: "19132"
+  #LEVEL_TYPE: "DEFAULT" # Options: FLAT, LEGACY, DEFAULT
+  #ALLOW_CHEATS: "false" # Options: true, false
+  #MAX_PLAYERS: "10"
+  #PLAYER_IDLE_TIMEOUT: "30"
+  #TEXTUREPACK_REQUIRED: "false" # Options: true, false
+  #
+  ## Changing these will have a security impact
+  #ONLINE_MODE: "true" # Options: true, false (removes Xbox Live account requirements)
+  #WHITE_LIST: "false" # If enabled, need to provide a whitelist.json by your own means. 
+  #
+  ## Changing these will have a performance impact
+  #VIEW_DISTANCE: "10"
+  #TICK_DISTANCE: "4"
+  #MAX_THREADS: "8"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: bds
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -20,12 +64,13 @@ spec:
       containers:
         - name: main
           image: itzg/minecraft-bedrock-server
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: minecraft-bedrock
           volumeMounts:
             - mountPath: /data
               name: data
-          env:
-            - name: EULA
-              value: "TRUE"
           ports:
             - containerPort: 19132
               protocol: UDP
