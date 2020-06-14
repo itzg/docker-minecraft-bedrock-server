@@ -8,7 +8,8 @@ RUN apt-get update && \
     curl \
     unzip \
     jq \
-    && apt-get clean
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 19132/udp
 
