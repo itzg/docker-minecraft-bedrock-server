@@ -55,8 +55,8 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
   echo "Downloading Bedrock server version ${VERSION} ..."
   curl -o ${TMP_ZIP} -fsSL ${DOWNLOAD_URL}
 
-  # remove only binaries to allow for an upgrade of those
-  rm -f bedrock_server *.so 2> /dev/null
+  # remove only binaries and some docs, to allow for an upgrade of those
+  rm -f bedrock_server *.so release-notes.txt bedrock_server_how_to.html 2> /dev/null
   # ... use -n to avoid overwriting any existing files with the archive's copy
   unzip -n -q ${TMP_ZIP}
   rm ${TMP_ZIP}
