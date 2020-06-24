@@ -59,7 +59,18 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
   curl -o ${TMP_ZIP} -fsSL ${DOWNLOAD_URL}
 
   # remove only binaries and some docs, to allow for an upgrade of those
-  rm -f bedrock_server *.so release-notes.txt bedrock_server_how_to.html 2> /dev/null
+  rm -rf bedrock_server *.so release-notes.txt bedrock_server_how_to.html valid_known_packs.json premium_cache 2> /dev/null
+
+  bkupDir=backup-pre-${VERSION}
+  for d in behavior_packs definitions minecraftpe resource_packs structures treatments world_templates
+  do
+    if [ -d $d ]; then
+      mkdir -p $bkupDir
+      echo "Backing up $d into $bkupDir"
+      mv $d $bkupDir
+    fi
+  done
+
   # ... use -n to avoid overwriting any existing files with the archive's copy
   unzip -n -q ${TMP_ZIP}
   rm ${TMP_ZIP}
