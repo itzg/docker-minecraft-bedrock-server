@@ -27,6 +27,9 @@ case ${VERSION} in
   1.14)
     VERSION=1.14.60.5
     ;;
+  1.16)
+    VERSION=1.16.0.2
+    ;;
   *)
     for a in data-bi-prtid data-platform; do
       DOWNLOAD_URL=$(restify --attribute=${a}=serverBedrockLinux ${downloadPage} 2> /tmp/restify.out | jq -r '.[0].href' || echo '')
