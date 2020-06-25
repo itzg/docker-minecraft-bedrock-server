@@ -88,6 +88,22 @@ in the "LAN Games" part of the "Friends" tab, such as:
 
 For more information about managing Bedrock Dedicated Servers in general, [check out this Reddit post](https://old.reddit.com/user/ProfessorValko/comments/9f438p/bedrock_dedicated_server_tutorial/).
 
+## Executing server commands
+
+Assuming you started container with stdin and tty enabled (such as using `-it`), you can attach to the container's console by its name or ID using:
+
+```shell script
+docker attach CONTAINER_NAME_OR_ID
+``` 
+
+While attached, you can execute any server-side commands, such as op'ing your player to be admin:
+
+```
+op YOUR_XBOX_USERNAME
+```
+
+When finished, detach from the server console using Ctrl-p, Ctrl-q
+
 ## Deploying with Docker Compose
 
 The [examples](examples) directory contains [an example Docker compose file](examples/docker-compose.yml) that declares:
