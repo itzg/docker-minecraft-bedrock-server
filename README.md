@@ -76,7 +76,14 @@ docker run -d -it --name bds-flat-creative \
 
 - `/data` : the location where the downloaded server is expanded and ran. Also contains the
   configuration properties file `server.properties`
-  
+
+You can create a `named volume` and use it as:
+
+```shell
+docker volume create mc-volume
+docker run -d -it --name mc-server -e EULA=TRUE -p 19132:19132/udp -v mc-volume:/data itzg/minecraft-bedrock-server
+```
+
 ## Connecting
 
 When running the container on your LAN, you can find and connect to the dedicated server
