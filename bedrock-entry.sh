@@ -71,8 +71,8 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
     fi
   done
 
-  # ... use -n to avoid overwriting any existing files with the archive's copy
-  unzip -n -q ${TMP_ZIP}
+  # ... overwrite all game files, except config files
+  unzip -q ${TMP_ZIP} -x server.properties whitelist.json permissions.json
   rm ${TMP_ZIP}
 
   chmod +x bedrock_server
