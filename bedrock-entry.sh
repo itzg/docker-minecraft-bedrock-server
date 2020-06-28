@@ -72,7 +72,7 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
   done
 
   # ... overwrite all game files, except config files
-  unzip -q ${TMP_ZIP} -x server.properties whitelist.json permissions.json
+  unzip -q ${TMP_ZIP} -x $(ls server.properties whitelist.json permissions.json 2> /dev/null)
   rm ${TMP_ZIP}
 
   chmod +x bedrock_server
