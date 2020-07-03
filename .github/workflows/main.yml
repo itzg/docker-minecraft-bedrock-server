@@ -34,4 +34,4 @@ jobs:
         tag_with_sha: false
         cache_froms: itzg/minecraft-bedrock-server:latest
         add_git_labels: true
-        push: false
+        push: true
