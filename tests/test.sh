@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Args:
+# - compose project
+# - test description
 runTest() {
   composeArgs="-f docker-compose.$1.test.yml -p $1"
   failed=false
