@@ -1,10 +1,6 @@
 name: Validate PR
 
 on:
-  push:
-    # ignore master since the main workflow covers that
-    branches-ignore:
-      - master
   pull_request:
     branches: [ master ]
 
