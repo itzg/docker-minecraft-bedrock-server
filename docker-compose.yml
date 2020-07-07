@@ -7,6 +7,7 @@ services:
       EULA: "TRUE"
       GAMEMODE: survival
       DIFFICULTY: normal
+    container_name: blokky_survival
     ports:
       - 19132:19132/udp
     volumes:
