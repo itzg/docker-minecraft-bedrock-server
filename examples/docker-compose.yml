@@ -1,18 +1,47 @@
 version: '3.4'
 
-services:
+volumes:
   bds:
+    external: true
+
+services:
+  bds1:
+    container_name: test
+
     image: itzg/minecraft-bedrock-server
     environment:
       EULA: "TRUE"
+
+      # customizing some defaults for easy reference
+      SERVER_NAME: "test"
+      LEVEL_NAME: "test"
+      MAX_PLAYERS: 20
       GAMEMODE: survival
       DIFFICULTY: normal
-    ports:
-      - 19132:19132/udp
+      ALLOW_CHEATS: "true"
+      LEVEL_SEED: "456265767"
+      WHITE_LIST: "true"
+
     volumes:
       - bds:/data
     stdin_open: true
     tty: true
+    restart: unless-stopped
 
-volumes:
-  bds: {}
+
+    # The server opens a secondary, random port. Limiting the available range and forwarding those ports below.
+    # That secondary port seems to be required for connecting with consoles via local network.
+    # Based on a trick found in a similar project:
+    # Source: https://github.com/karlrees/docker_bedrockserver/issues/15
+
+    sysctls:
+      net.ipv4.ip_local_port_range: 39132 39133
+    ports:
+      # the main server port
+      - 19132:19132/udp
+
+      # additional ports (server will use one of them)
+      - 39132:39132
+      - 39132:39132/udp
+      - 39133:39133
+      - 39133:39133/udp
