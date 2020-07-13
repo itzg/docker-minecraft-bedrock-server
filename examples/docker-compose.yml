@@ -1,8 +1,10 @@
 version: '3.4'
 
+# you need to create the volume first with: docker volume create --opt device=[path] --opt o=bind bds --opt type=none
 volumes:
   bds:
     external: true
+
 
 services:
   bds1:
@@ -12,15 +14,15 @@ services:
     environment:
       EULA: "TRUE"
 
-      # customizing some defaults for easy reference
-      SERVER_NAME: "test"
-      LEVEL_NAME: "test"
-      MAX_PLAYERS: 20
-      GAMEMODE: survival
-      DIFFICULTY: normal
-      ALLOW_CHEATS: "true"
-      LEVEL_SEED: "456265767"
-      WHITE_LIST: "true"
+      # some env vars for easy reference
+      # SERVER_NAME: "test"
+      # LEVEL_NAME: "test"
+      # MAX_PLAYERS: 20
+      # GAMEMODE: survival
+      # DIFFICULTY: normal
+      # ALLOW_CHEATS: "true"
+      # LEVEL_SEED: "123456789"
+      # WHITE_LIST: "true"
 
     volumes:
       - bds:/data

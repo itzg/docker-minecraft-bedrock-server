@@ -1,11 +1,5 @@
 
-show coords ingame
-gamerule showcoordinates true
 
-# tickarea for command blocks
-# 385 90 58
-tickingarea add circle 385 90 58 4 spawn_blocks
-tickingarea add 126 4 -251 122 4 -244 command_centre
 
 OP commands copied from the help of 1.16.1
 
