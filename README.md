@@ -115,7 +115,7 @@ When finished, detach from the server console using Ctrl-p, Ctrl-q
 
 ## Deploying with Docker Compose
 
-The [examples](examples) directory contains [an example Docker compose file](examples/docker-compose.yml) that declares:
+The [examples](examples) directory contains [an example Docker compose file](examples/macos/docker-compose.yml) that declares:
 - a service running the bedrock server container and exposing UDP port 19132
 - a volume to be attached to the service
 
