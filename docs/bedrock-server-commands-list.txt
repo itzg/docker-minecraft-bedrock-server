@@ -1,4 +1,16 @@
+
+show coords ingame
+gamerule showcoordinates true
+
+# tickarea for command blocks
+# 385 90 58
+tickingarea add circle 385 90 58 4 spawn_blocks
+tickingarea add 126 4 -251 122 4 -244 command_centre
+
 OP commands copied from the help of 1.16.1
+
+
+
 
 
 /? [command: CommandName]
@@ -23,7 +35,7 @@ OP commands copied from the help of 1.16.1
 /execute <origin: target> <position: x y z> detect <detectPos: x y z> <block: Block> <data: int> <command: command>
 /fill <from: x y z> <to: x y z> <tileName: Block> [tileData: int] [oldBlockHandling: FillMode]
 /fill <from: x y z> <to: x y z> <tileName: Block> <tileData: int> replace [replaceTileName: Block] [replaceDataValue: int]
-/function <name: filepath>
+/function <name: filepath>list
 /gamemode <gameMode: GameMode> [player: target]
 /gamemode <gameMode: int> [player: target]
 /gamerule

@@ -1,6 +1,11 @@
+## macos keychain problems (such as docker.errors.DockerException: Credentials store error: StoreError...)
+security unlock-keychain
+
 
 ## create external volume (worlds, users data etc.)
 docker volume create --opt device=[path] --opt o=bind bds --opt type=none
+
+
 
 ## create and start containers
 docker-compose up -d
@@ -17,3 +22,19 @@ docker inspect [container name] | grep -i -A 1 'IPAddress\|ExposedPorts'
 
 ## access container's filesystem
 docker exec -t -i [container name] /bin/bash
+
+
+
+## stop a single container
+docker stop [container]
+
+# ---- i dont thing the below works, seems to stop other containers as well
+## remove single container
+docker rm [container]
+
+## 'up' single container
+? docker-compose up -d [service key]
+docker-compose up -d --no-deps <service_name>
+
+# if changes were made
+docker-compose up -d --no-deps --build <service_name>

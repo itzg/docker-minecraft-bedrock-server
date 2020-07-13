@@ -4,31 +4,22 @@ volumes:
   bds:
     external: true
 
-#networks:
-#  static-network:
-#    ipam:
-#      config:
-#        - subnet: 172.20.0.0/16
-
-
-
 services:
 
   bds1:
-
     container_name: emer
 
     image: itzg/minecraft-bedrock-server
     environment:
       SERVER_NAME: "EmerLand"
       LEVEL_NAME: "EmerLand"
-      # LEVEL_NAME: "hunted desert town"
+      # "nice village near spawn"
+      # LEVEL_SEED: "720057903"
       MAX_PLAYERS: 20
       EULA: "TRUE"
-      GAMEMODE: survival
+      GAMEMODE: adventure
       DIFFICULTY: normal
       ALLOW_CHEATS: "true"
-      LEVEL_SEED: "720057903"
       WHITE_LIST: "true"
     ports:
       - 19132:19132/udp
@@ -36,8 +27,6 @@ services:
       - 39132:39132/udp
       - 39133:39133
       - 39133:39133/udp
-    expose:
-      - 19132/udp
     sysctls:
       net.ipv4.ip_local_port_range: 39132 39133
     volumes:
@@ -48,27 +37,25 @@ services:
 
 
 #  bds2:
-#
-#    container_name: survival
+#    container_name: flat
 #
 #    image: itzg/minecraft-bedrock-server
 #    environment:
-#      SERVER_NAME: "blokkY2"
-#      LEVEL_NAME: "Survive the night"
-#      MAX_PLAYERS: 5
+#      SERVER_NAME: "FlatLand"
+#      LEVEL_NAME: "FlatLand"
+#      MAX_PLAYERS: 20
 #      EULA: "TRUE"
 #      GAMEMODE: creative
 #      DIFFICULTY: normal
 #      ALLOW_CHEATS: "true"
-#      SERVER_PORT: 19140
+#    expose:
+#      - 19140/udp
 #    ports:
-#      - 19140:19140/udp
+#      - 19140:19132/udp
 #      - 39140:39140
 #      - 39140:39140/udp
 #      - 39141:39141
 #      - 39141:39141/udp
-#    expose:
-#      - 19140/udp
 #    sysctls:
 #      net.ipv4.ip_local_port_range: 39140 39141
 #    volumes:
