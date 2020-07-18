@@ -25,7 +25,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Build and push Docker images
-      uses: docker/build-push-action@v3.3
+      uses: docker/build-push-action@v1.1.0
       with:
         repository: itzg/minecraft-bedrock-server
         username: ${{ secrets.DOCKER_USER }}
