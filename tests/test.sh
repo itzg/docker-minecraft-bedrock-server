@@ -18,11 +18,3 @@ runTest() {
 cd $(dirname $0)
 
 runTest defaults "using defaults"
-
-docker volume create mc-shared
-trap "docker volume rm mc-shared" EXIT
-
-export BDS_VERSION=1.14
-runTest versioned "with VERSION=1.14"
-export BDS_VERSION=1.16
-runTest versioned "upgrading to VERSION=1.16"
