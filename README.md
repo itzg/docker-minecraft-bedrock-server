@@ -86,6 +86,23 @@ docker volume create mc-volume
 docker run -d -it --name mc-server -e EULA=TRUE -p 19132:19132/udp -v mc-volume:/data itzg/minecraft-bedrock-server
 ```
 
+If you're using a named volume and want the bedrock process to run as a non-root user then you will need to pre-create the volume and `chown` it to the desired user.
+
+For example, if you want the bedrock server to run with user ID 1000 and group ID 1000, then create and chown the volume named "bedrock" using:
+
+```shell script
+docker run --rm -v bedrock:/data alpine chown 1000:1000 /data
+```
+
+If using `docker run` then simply reference that volume "bedrock" in the `-v` argument. If using a compose file, declare the volume as an external using this type of declaration:
+
+```yaml
+volumes:
+  bedrock:
+    external:
+      name: bedrock
+```
+
 ## Connecting
 
 When running the container on your LAN, you can find and connect to the dedicated server
