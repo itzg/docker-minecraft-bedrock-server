@@ -60,6 +60,11 @@ The following environment variables will set the equivalent property in `server.
 - `LEVEL_SEED`
 - `DEFAULT_PLAYER_PERMISSION_LEVEL`
 - `TEXTUREPACK_REQUIRED`
+- `SERVER_AUTHORITATIVE_MOVEMENT`
+- `PLAYER_MOVEMENT_SCORE_THRESHOLD`
+- `PLAYER_MOVEMENT_DISTANCE_THRESHOLD`
+- `PLAYER_MOVEMENT_DURATION_THRESHOLD_IN_MS`
+- `CORRECT_PLAYER_MOVEMENT`
 
 For example, to configure a flat, creative server instead of the default use:
 
