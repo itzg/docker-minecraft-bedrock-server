@@ -73,5 +73,22 @@
   "texturepack-required": {
     "env": "TEXTUREPACK_REQUIRED",
     "allowed": ["true","false"]
+  },
+  "server-authoritative-movement": {
+    "env": "SERVER_AUTHORITATIVE_MOVEMENT",
+    "allowed": ["true","false"]
+  },
+  "player-movement-score-threshold": {
+    "env": "PLAYER_MOVEMENT_SCORE_THRESHOLD"
+  },
+  "player-movement-distance-threshold": {
+    "env": "PLAYER_MOVEMENT_DISTANCE_THRESHOLD"
+  },
+  "player-movement-duration-threshold-in-ms": {
+    "env": "PLAYER_MOVEMENT_DURATION_THRESHOLD_IN_MS"
+  },
+  "correct-player-movement": {
+    "env": "CORRECT_PLAYER_MOVEMENT",
+    "allowed": ["true","false"]
   }
 }
