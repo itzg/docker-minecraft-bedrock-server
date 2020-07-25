@@ -8,7 +8,7 @@ services:
     command: status-bedrock --host mc --retry-interval 1s --retry-limit 60
   mc:
     build:
-      context: ..
+      context: .
     environment:
       EULA: "TRUE"
 
