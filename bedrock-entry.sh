@@ -30,7 +30,7 @@ case ${VERSION^^} in
   1.16.1)
     VERSION=1.16.1.02
     ;;
-  1.16.20)
+  1.16)
     VERSION=1.16.20.03
     ;;
   LATEST)
