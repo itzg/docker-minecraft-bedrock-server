@@ -27,8 +27,11 @@ case ${VERSION^^} in
   1.14|PREVIOUS)
     VERSION=1.14.60.5
     ;;
-  1.16)
+  1.16.1)
     VERSION=1.16.1.02
+    ;;
+  1.16)
+    VERSION=1.16.20.03
     ;;
   LATEST)
     for a in data-bi-prtid data-platform; do
