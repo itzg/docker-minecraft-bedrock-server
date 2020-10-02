@@ -5,6 +5,9 @@
   "server-port": {
     "env": "SERVER_PORT"
   },
+  "server-portv6": {
+    "env": "SERVER_PORT_V6"
+  },
   "gamemode": {
     "env": "GAMEMODE",
     "allowed": ["survival","creative","adventure"],

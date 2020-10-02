@@ -45,6 +45,7 @@ The following environment variables will set the equivalent property in `server.
 
 - `SERVER_NAME`
 - `SERVER_PORT`
+- `SERVER_PORT_V6`
 - `GAMEMODE`
 - `DIFFICULTY`
 - `LEVEL_TYPE`
