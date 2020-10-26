@@ -94,6 +94,14 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
   mv bedrock_server bedrock_server-${VERSION}
 fi
 
+if [ -n "$WHITE_LIST" ]; then
+  echo "Setting whitelist"
+  rm -rf whitelist.json
+  echo $WHITE_LIST | awk -v RS=, 'BEGIN{print "["}; {print "{ \"name\": \"" $1 "\" },"}; END{print "]"}' > whitelist.json
+  # flag whitelist to true so the server properties process correctly
+  export WHITE_LIST=true
+fi
+
 set-property --file server.properties --bulk /etc/bds-property-definitions.json
 
 export LD_LIBRARY_PATH=.
