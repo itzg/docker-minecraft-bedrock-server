@@ -120,8 +120,8 @@ in the "LAN Games" part of the "Friends" tab, such as:
 
 The whitelist works with player names. The server will look up the names and add in the XUID to match the player.
 
-```yaml
-whitelist: player1,player2,player3
+```shell
+-e WHITELIST "player1,player2,player3"
 ```
 
 ## More information
