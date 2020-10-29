@@ -109,10 +109,10 @@ if [ -n "$OPS" ] || [ -n "$MEMBERS" ] || [ -n "$VISITORS" ]; then
   echo "]" >> permissions.json
 fi
 
-if [ -n "$WHITE_LIST" ]; then
+if [ -n "$WHITE_LIST_USERS" ]; then
   echo "Setting whitelist"
   rm -rf whitelist.json
-  echo $WHITE_LIST | awk -v RS=, 'BEGIN{print "["}; {print "{ \"name\": \"" $1 "\" },"}; END{print "]"}' > whitelist.json
+  echo $WHITE_LIST_USERS | awk -v RS=, 'BEGIN{print "["}; {print "{ \"name\": \"" $1 "\" },"}; END{print "]"}' > whitelist.json
   # flag whitelist to true so the server properties process correctly
   export WHITE_LIST=true
 fi
