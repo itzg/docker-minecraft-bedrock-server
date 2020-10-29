@@ -116,6 +116,24 @@ in the "LAN Games" part of the "Friends" tab, such as:
 
 ![](docs/example-client.jpg)
 
+## Permissions
+
+The Bedrock Dedicated Server requires permissions be defined with XUIDs. There are various tools to look these up online and they
+are also printed to the log when a player joins. There are 3 levels of permissions and 3 options to configure each group:
+
+- `OPS` is used to define operators on the server.  
+```shell
+-e OPS "1234567890,0987654321"
+```
+- `MEMBERS` is used to define the members on the server.
+```shell
+-e MEMBERS "1234567890,0987654321"
+```
+- `VISITORS` is used to define visitors on the server.
+```shell
+-e VISITORS "1234567890,0987654321"
+```
+
 ## Whitelist
 
 The whitelist works with player names. The server will look up the names and add in the XUID to match the player.

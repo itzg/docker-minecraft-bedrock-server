@@ -94,6 +94,21 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
   mv bedrock_server bedrock_server-${VERSION}
 fi
 
+if [ -n "$OPS" ] || [ -n "$MEMBERS" ] || [ -n "$VISITORS" ]; then
+  echo "Updating permissions"
+  echo "[" > permissions.json
+  if [ -n "$OPS" ]; then
+    echo $OPS | awk -v RS=, '{print "{ \"permission\": \"operator\", \"xuid\": \"" $1 "\" },"}' >> permissions.json
+  fi
+  if [ -n "$MEMBERS" ]; then
+    echo $MEMBERS | awk -v RS=, '{print "{ \"permission\": \"member\", \"xuid\": \"" $1 "\" },"}' >> permissions.json
+  fi
+  if [ -n "$VISITORS" ]; then
+    echo $VISITORS | awk -v RS=, '{print "{ \"permission\": \"visitor\", \"xuid\": \"" $1 "\" },"}' >> permissions.json
+  fi
+  echo "]" >> permissions.json
+fi
+
 if [ -n "$WHITE_LIST" ]; then
   echo "Setting whitelist"
   rm -rf whitelist.json
