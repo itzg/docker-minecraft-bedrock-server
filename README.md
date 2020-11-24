@@ -136,10 +136,7 @@ are also printed to the log when a player joins. There are 3 levels of permissio
 
 ## Whitelist
 
-There are two ways to handle a whitelist. The first is to set the `WHITE_LIST` environment variable to true and map
-in a whitelist.json that is custom-crafted to the container. The other is to use the `WHITE_LIST_USERS` environment
-variable to list users that should be whitelisted. This list is player names. The server will look up the names and
-add in the XUID to match the player.
+There are two ways to handle a whitelist. The first is to set the `WHITE_LIST` environment variable to true and map in [a whitelist.json](https://minecraft.gamepedia.com/Whitelist.json) that is custom-crafted to the container. The other is to use the `WHITE_LIST_USERS` environment variable to list users that should be whitelisted. This list is player names. The server will look up the names and add in the XUID to match the player.
 
 ```shell
 -e WHITE_LIST_USERS "player1,player2,player3"
