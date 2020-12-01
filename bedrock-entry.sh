@@ -1,5 +1,12 @@
 #!/bin/bash
 
+set -eo pipefail
+
+if [[ ${DEBUG^^} = TRUE ]]; then
+  set -x
+  curlArgs=(-v)
+fi
+
 downloadPage=https://www.minecraft.net/en-us/download/server/bedrock/
 
 if [[ ${EULA^^} != TRUE ]]; then
@@ -11,8 +18,6 @@ if [[ ${EULA^^} != TRUE ]]; then
   echo
   exit 1
 fi
-
-set -e
 
 case ${VERSION^^} in
   1.11)
@@ -67,7 +72,7 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
   TMP_ZIP=/tmp/$(basename "${DOWNLOAD_URL}")
 
   echo "Downloading Bedrock server version ${VERSION} ..."
-  if ! curl -o ${TMP_ZIP} -fsSL ${DOWNLOAD_URL}; then
+  if ! curl "${curlArgs[@]}" -o ${TMP_ZIP} -fsSL ${DOWNLOAD_URL}; then
     echo "ERROR failed to download from ${DOWNLOAD_URL}"
     echo "      Double check that the given VERSION is valid"
     exit 2
