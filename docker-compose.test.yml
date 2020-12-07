@@ -4,7 +4,7 @@ services:
   sut:
     depends_on:
       - mc
-    image: itzg/mc-monitor:0.6.0
+    image: itzg/mc-monitor:0.6.1
     command: status-bedrock --host mc --retry-interval 1s --retry-limit 60
   mc:
     build:
