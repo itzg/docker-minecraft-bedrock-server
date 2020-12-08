@@ -101,23 +101,17 @@ fi
 
 if [ -n "$OPS" ] || [ -n "$MEMBERS" ] || [ -n "$VISITORS" ]; then
   echo "Updating permissions"
-  echo "[" > permissions.json
-  if [ -n "$OPS" ]; then
-    echo $OPS | awk -v RS=, '{print "{ \"permission\": \"operator\", \"xuid\": \"" $1 "\" },"}' >> permissions.json
-  fi
-  if [ -n "$MEMBERS" ]; then
-    echo $MEMBERS | awk -v RS=, '{print "{ \"permission\": \"member\", \"xuid\": \"" $1 "\" },"}' >> permissions.json
-  fi
-  if [ -n "$VISITORS" ]; then
-    echo $VISITORS | awk -v RS=, '{print "{ \"permission\": \"visitor\", \"xuid\": \"" $1 "\" },"}' >> permissions.json
-  fi
-  echo "]" >> permissions.json
+  jq -n --arg ops "$OPS" --arg members "$MEMBERS" --arg visitors "$VISITORS" '[
+  [$ops      | split(",") | map({permission: "operator", xuid:.})],
+  [$members  | split(",") | map({permission: "member", xuid:.})],
+  [$visitors | split(",") | map({permission: "visitor", xuid:.})]
+  ]| flatten' > permissions.json
 fi
 
 if [ -n "$WHITE_LIST_USERS" ]; then
   echo "Setting whitelist"
   rm -rf whitelist.json
-  echo "$WHITE_LIST_USERS" | jq -R 'split(",") | map({"name": .})' > whitelist.json
+  jq -n --arg users "$WHITE_LIST_USERS" '$users | split(",") | map({"name": .})' > whitelist.json
   # flag whitelist to true so the server properties process correctly
   export WHITE_LIST=true
 fi
