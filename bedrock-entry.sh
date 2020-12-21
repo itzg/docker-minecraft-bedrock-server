@@ -40,10 +40,12 @@ case ${VERSION^^} in
     ;;
   LATEST)
     for a in data-bi-prtid data-platform; do
-      DOWNLOAD_URL=$(restify --attribute=${a}=serverBedrockLinux ${downloadPage} 2> restify.err | jq -r '.[0].href' || echo '')
-      if [[ ${DOWNLOAD_URL} ]]; then
-        break
-      fi
+      for i in {1..3}; do
+        DOWNLOAD_URL=$(restify --attribute=${a}=serverBedrockLinux ${downloadPage} 2> restify.err | jq -r '.[0].href' || echo '')
+        if [[ ${DOWNLOAD_URL} ]]; then
+          break 2
+        fi
+      done
     done
     if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
       VERSION=${BASH_REMATCH[1]}
