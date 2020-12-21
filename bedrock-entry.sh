@@ -50,6 +50,7 @@ case ${VERSION^^} in
     elif [[ $(ls -rv bedrock_server-* 2> /dev/null|head -1) =~ bedrock_server-(.*) ]]; then
       VERSION=${BASH_REMATCH[1]}
       echo "WARN Minecraft download page failed, so using existing download of $VERSION"
+      cat restify.err
     else
       echo "Failed to extract download URL '${DOWNLOAD_URL}' from ${downloadPage}"
       cat restify.err
