@@ -47,7 +47,7 @@ case ${VERSION^^} in
     done
     if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
       VERSION=${BASH_REMATCH[1]}
-    elif [[ $(ls bedrock_server-* 2> /dev/null|head -1) =~ bedrock_server-(.*) ]]; then
+    elif [[ $(ls -rv bedrock_server-* 2> /dev/null|head -1) =~ bedrock_server-(.*) ]]; then
       VERSION=${BASH_REMATCH[1]}
       echo "WARN Minecraft download page failed, so using existing download of $VERSION"
     else
