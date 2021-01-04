@@ -40,16 +40,19 @@ case ${VERSION^^} in
     ;;
   LATEST)
     for a in data-bi-prtid data-platform; do
-      DOWNLOAD_URL=$(restify --attribute=${a}=serverBedrockLinux ${downloadPage} 2> restify.err | jq -r '.[0].href' || echo '')
-      if [[ ${DOWNLOAD_URL} ]]; then
-        break
-      fi
+      for i in {1..3}; do
+        DOWNLOAD_URL=$(restify --attribute=${a}=serverBedrockLinux ${downloadPage} 2> restify.err | jq -r '.[0].href' || echo '')
+        if [[ ${DOWNLOAD_URL} ]]; then
+          break 2
+        fi
+      done
     done
     if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
       VERSION=${BASH_REMATCH[1]}
-    elif [[ $(ls bedrock_server-* 2> /dev/null|head -1) =~ bedrock_server-(.*) ]]; then
+    elif [[ $(ls -rv bedrock_server-* 2> /dev/null|head -1) =~ bedrock_server-(.*) ]]; then
       VERSION=${BASH_REMATCH[1]}
       echo "WARN Minecraft download page failed, so using existing download of $VERSION"
+      cat restify.err
     else
       echo "Failed to extract download URL '${DOWNLOAD_URL}' from ${downloadPage}"
       cat restify.err
