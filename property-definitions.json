@@ -79,7 +79,11 @@
   },
   "server-authoritative-movement": {
     "env": "SERVER_AUTHORITATIVE_MOVEMENT",
-    "allowed": ["true","false"]
+    "allowed": ["server-auth","client-auth"],
+    "mappings": {
+      "true": "server-auth",
+      "false": "client-auth"
+    }
   },
   "player-movement-score-threshold": {
     "env": "PLAYER_MOVEMENT_SCORE_THRESHOLD"
