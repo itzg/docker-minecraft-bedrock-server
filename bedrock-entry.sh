@@ -35,32 +35,33 @@ case ${VERSION^^} in
   1.16.1)
     VERSION=1.16.1.02
     ;;
-  1.16)
-    VERSION=1.16.20.03
+  1.16|LATEST)
+    VERSION=1.16.210.05
     ;;
-  LATEST)
-    for a in data-bi-prtid data-platform; do
-      for i in {1..3}; do
-        DOWNLOAD_URL=$(restify --attribute=${a}=serverBedrockLinux ${downloadPage} 2> restify.err | jq -r '.[0].href' || echo '')
-        if [[ ${DOWNLOAD_URL} ]]; then
-          break 2
-        fi
-      done
-    done
-    if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
-      VERSION=${BASH_REMATCH[1]}
-    elif [[ $(ls -rv bedrock_server-* 2> /dev/null|head -1) =~ bedrock_server-(.*) ]]; then
-      VERSION=${BASH_REMATCH[1]}
-      echo "WARN Minecraft download page failed, so using existing download of $VERSION"
-      cat restify.err
-    else
-      echo "Failed to extract download URL '${DOWNLOAD_URL}' from ${downloadPage}"
-      cat restify.err
-      rm restify.err
-      exit 2
-    fi
-    rm restify.err
-    ;;
+  # TODO find a new way to lookup latest version since download page now requires EULA ack
+#  LATEST)
+#    for a in data-bi-prtid data-platform; do
+#      for i in {1..3}; do
+#        DOWNLOAD_URL=$(restify --attribute=${a}=serverBedrockLinux ${downloadPage} 2> restify.err | jq -r '.[0].href' || echo '')
+#        if [[ ${DOWNLOAD_URL} ]]; then
+#          break 2
+#        fi
+#      done
+#    done
+#    if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
+#      VERSION=${BASH_REMATCH[1]}
+#    elif [[ $(ls -rv bedrock_server-* 2> /dev/null|head -1) =~ bedrock_server-(.*) ]]; then
+#      VERSION=${BASH_REMATCH[1]}
+#      echo "WARN Minecraft download page failed, so using existing download of $VERSION"
+#      cat restify.err
+#    else
+#      echo "Failed to extract download URL '${DOWNLOAD_URL}' from ${downloadPage}"
+#      cat restify.err
+#      rm restify.err
+#      exit 2
+#    fi
+#    rm restify.err
+#    ;;
   *)
     # use the given version exactly
     ;;
