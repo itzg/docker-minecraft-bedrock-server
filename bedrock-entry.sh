@@ -5,6 +5,7 @@ set -eo pipefail
 if [[ ${DEBUG^^} = TRUE ]]; then
   set -x
   curlArgs=(-v)
+  echo "DEBUG: running as $(id -a) with $(ls -ld /data)"
 fi
 
 downloadPage=https://www.minecraft.net/en-us/download/server/bedrock/
