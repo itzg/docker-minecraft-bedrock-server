@@ -95,8 +95,9 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
     fi
   done
 
-  # ... overwrite all game files, except config files
-  unzip -q ${TMP_ZIP} -x $(ls server.properties whitelist.json permissions.json 2> /dev/null)
+  # Do not overwrite existing files, which means the cleanup above needs to account for things
+  # that MUST be replaced on upgrade
+  unzip -q -n ${TMP_ZIP}
   rm ${TMP_ZIP}
 
   chmod +x bedrock_server
