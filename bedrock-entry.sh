@@ -86,6 +86,8 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
   rm -rf bedrock_server *.so release-notes.txt bedrock_server_how_to.html valid_known_packs.json premium_cache 2> /dev/null
 
   bkupDir=backup-pre-${VERSION}
+  # fixup any previous interrupted upgrades
+  rm -rf "${bkupDir}"
   for d in behavior_packs definitions minecraftpe resource_packs structures treatments world_templates
   do
     if [ -d $d ]; then
