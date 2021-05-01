@@ -51,6 +51,10 @@
     "env": "WHITE_LIST",
     "allowed": ["true","false"]
   },
+  "allow-list": {
+    "env": "ALLOW_LIST",
+    "allowed": ["true","false"]
+  },
   "view-distance": {
     "env": "VIEW_DISTANCE"
   },

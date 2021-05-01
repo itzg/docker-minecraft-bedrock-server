@@ -142,6 +142,8 @@ There are two ways to handle a whitelist. The first is to set the `WHITE_LIST` e
 -e WHITE_LIST_USERS="player1,player2,player3"
 ```
 
+> Starting with 1.16.230.50, `ALLOW_LIST`, `ALLOW_LIST_USERS`, and the file `allowlist.json` will be used instead.
+
 ## More information
 
 For more information about managing Bedrock Dedicated Servers in general, [check out this Reddit post](https://old.reddit.com/user/ProfessorValko/comments/9f438p/bedrock_dedicated_server_tutorial/).

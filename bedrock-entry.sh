@@ -115,12 +115,19 @@ if [ -n "$OPS" ] || [ -n "$MEMBERS" ] || [ -n "$VISITORS" ]; then
   ]| flatten' > permissions.json
 fi
 
-if [ -n "$WHITE_LIST_USERS" ]; then
-  echo "Setting whitelist"
-  rm -rf whitelist.json
-  jq -n --arg users "$WHITE_LIST_USERS" '$users | split(",") | map({"name": .})' > whitelist.json
-  # flag whitelist to true so the server properties process correctly
+allowListUsers=${ALLOW_LIST_USERS:-${WHITE_LIST_USERS}}
+
+if [ -n "$allowListUsers" ]; then
+  echo "Setting allow list"
+  for f in whitelist.json allowlist.json; do
+    if [ -f $f ]; then
+      rm -rf $f
+      jq -n --arg users "$allowListUsers" '$users | split(",") | map({"name": .})' > $f
+    fi
+  done
+  # activate server property to enable list usage
   export WHITE_LIST=true
+  export ALLOW_LIST=true
 fi
 
 set-property --file server.properties --bulk /etc/bds-property-definitions.json
