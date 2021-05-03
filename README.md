@@ -38,6 +38,7 @@ For Minecraft Java Edition you'll need to use this image instead:
   bedrock server process
 - `GID` (default derived from `/data` owner) : can be set to a specific group ID to run the
   bedrock server process
+- `PACKAGE_BACKUP_KEEP` (`2`) : how many package backups to keep
 
 ### Server Properties
 

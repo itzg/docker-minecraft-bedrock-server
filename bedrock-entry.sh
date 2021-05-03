@@ -83,7 +83,7 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
   fi
 
   # remove only binaries and some docs, to allow for an upgrade of those
-  rm -rf bedrock_server *.so release-notes.txt bedrock_server_how_to.html valid_known_packs.json premium_cache 2> /dev/null
+  rm -rf bedrock_server bedrock_server-* *.so release-notes.txt bedrock_server_how_to.html valid_known_packs.json premium_cache 2> /dev/null
 
   bkupDir=backup-pre-${VERSION}
   # fixup any previous interrupted upgrades
@@ -96,6 +96,15 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
       mv $d $bkupDir
     fi
   done
+
+  # remove old package backups, but keep PACKAGE_BACKUP_KEEP
+  if (( ${PACKAGE_BACKUP_KEEP:=2} >= 0 )); then
+    shopt -s nullglob
+    for d in $( ls -td1 backup-pre-* | tail +$(( PACKAGE_BACKUP_KEEP + 1 )) ); do
+      echo "Pruning $d"
+      rm -rf $d
+    done
+  fi
 
   # Do not overwrite existing files, which means the cleanup above needs to account for things
   # that MUST be replaced on upgrade
