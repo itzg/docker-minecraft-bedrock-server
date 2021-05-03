@@ -85,7 +85,7 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
   # remove only binaries and some docs, to allow for an upgrade of those
   rm -rf bedrock_server *.so release-notes.txt bedrock_server_how_to.html valid_known_packs.json premium_cache 2> /dev/null
 
-  bkupDir=backup-pre-${VERSION}
+  bkupDir=/tmp/backup-pre-${VERSION}
   # fixup any previous interrupted upgrades
   rm -rf "${bkupDir}"
   for d in behavior_packs definitions minecraftpe resource_packs structures treatments world_templates
@@ -95,6 +95,11 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
       echo "Backing up $d into $bkupDir"
       mv $d $bkupDir
     fi
+  done
+  # remove any old  previous backups
+  shopt -s nullglob
+  for d in backup-pre-*; do
+    rm -rf $d
   done
 
   # Do not overwrite existing files, which means the cleanup above needs to account for things
