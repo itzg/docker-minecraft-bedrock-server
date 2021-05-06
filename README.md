@@ -219,3 +219,7 @@ You can follow the logs of the deployment using:
 ```bash
 kubectl logs -f deployment/bds
 ```
+
+## Solutions for backing up data
+
+- [kaiede/minecraft-bedrock-backup image](https://hub.docker.com/r/kaiede/minecraft-bedrock-backup) provided by @Kaiede
