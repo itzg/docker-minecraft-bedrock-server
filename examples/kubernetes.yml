@@ -84,6 +84,8 @@ spec:
                 - 127.0.0.1
             initialDelaySeconds: 30
           livenessProbe: *probe
+          tty: true
+          stdin: true
   volumeClaimTemplates:
     - metadata:
         name: data
