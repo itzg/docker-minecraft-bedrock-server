@@ -8,7 +8,7 @@ if [[ ${DEBUG^^} = TRUE ]]; then
   echo "DEBUG: running as $(id -a) with $(ls -ld /data)"
 fi
 
-downloadPage=https://www.minecraft.net/en-us/download/server/bedrock/
+downloadPage=https://www.minecraft.net/en-us/download/server/bedrock
 
 if [[ ${EULA^^} != TRUE ]]; then
   echo
@@ -40,9 +40,9 @@ case ${VERSION^^} in
     VERSION=1.16.20.03
     ;;
   LATEST)
-    for a in data-bi-prtid data-platform; do
+    for a in data-platform data-bi-prtid; do
       for i in {1..3}; do
-        DOWNLOAD_URL=$(restify --attribute=${a}=serverBedrockLinux ${downloadPage} 2> restify.err | jq -r '.[0].href' || echo '')
+        DOWNLOAD_URL=$(restify --user-agent=itzg/minecraft-bedrock-server --attribute=${a}=serverBedrockLinux ${downloadPage} 2> restify.err | jq -r '.[0].href' || echo '')
         if [[ ${DOWNLOAD_URL} ]]; then
           break 2
         fi
