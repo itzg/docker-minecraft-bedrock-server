@@ -41,6 +41,8 @@ jobs:
         uses: docker/metadata-action@v3.3.0
         with:
           images: itzg/minecraft-bedrock-server
+          flavor: |
+            latest=${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
 
       - name: Build and push
         uses: docker/build-push-action@v2
