@@ -43,7 +43,7 @@ case ${VERSION^^} in
     echo "Looking up latest version..."
     for a in data-platform ; do
       for i in {1..5}; do
-        DOWNLOAD_URL=$(restify --user-agent=itzg/minecraft-bedrock-server --attribute=${a}=serverBedrockLinux ${downloadPage} 2> restify.err | jq -r '.[0].href' || echo '')
+        DOWNLOAD_URL=$(restify --user-agent=itzg/minecraft-bedrock-server --headers "accept-language:*" --attribute=${a}=serverBedrockLinux ${downloadPage} 2> restify.err | jq -r '.[0].href' || echo '')
         if [[ ${DOWNLOAD_URL} ]]; then
           break 2
         fi
