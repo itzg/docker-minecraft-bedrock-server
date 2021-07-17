@@ -42,7 +42,7 @@ case ${VERSION^^} in
   LATEST)
     echo "Looking up latest version..."
     for a in data-platform ; do
-      for i in {1..5}; do
+      for i in {1..3}; do
         DOWNLOAD_URL=$(restify --user-agent=itzg/minecraft-bedrock-server --headers "accept-language:*" --attribute=${a}=serverBedrockLinux ${downloadPage} 2> restify.err | jq -r '.[0].href' || echo '')
         if [[ ${DOWNLOAD_URL} ]]; then
           break 2
@@ -50,6 +50,10 @@ case ${VERSION^^} in
         sleep 1
       done
     done
+    if [[ -z ${DOWNLOAD_URL} ]]; then
+      DOWNLOAD_URL=$(curl -s https://mc-bds-helper.vercel.app/api/latest)
+    fi
+
     if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
       VERSION=${BASH_REMATCH[1]}
     elif [[ $(ls -rv bedrock_server-* 2> /dev/null|head -1) =~ bedrock_server-(.*) ]]; then
@@ -57,12 +61,16 @@ case ${VERSION^^} in
       echo "WARN Minecraft download page failed, so using existing download of $VERSION"
       cat restify.err
     else
-      echo "Failed to extract download URL '${DOWNLOAD_URL}' from ${downloadPage}"
-      cat restify.err
-      rm restify.err
+      if [[ -f restify.err ]]; then
+        echo "Failed to extract download URL '${DOWNLOAD_URL}' from ${downloadPage}"
+        cat restify.err
+        rm restify.err
+      else
+        echo "Failed to lookup download URL: ${DOWNLOAD_URL}"
+      fi
       exit 2
     fi
-    rm restify.err
+    rm -f restify.err
     ;;
   *)
     # use the given version exactly
