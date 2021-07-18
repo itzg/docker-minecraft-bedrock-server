@@ -13,6 +13,8 @@ exposing the default UDP port:
 docker run -d -it -e EULA=TRUE -p 19132:19132/udp itzg/minecraft-bedrock-server
 ```
 
+> **NOTE**: if you plan on running a server for a longer amount of time it is highly recommended using a management layer such as [Docker Compose](#deploying-with-docker-compose) or [Kubernetes](#deploying-with-kubernetes) to allow for incremental reconfiguration and image upgrades.
+
 ## Upgrading to the latest Bedrock server version
 
 With the `VERSION` variable set to `LATEST`, which is the default, then the Bedrock server can be upgraded by restarting the container. At every startup, the container checks for the latest version and upgrades, if needed.
