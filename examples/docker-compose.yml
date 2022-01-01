@@ -9,16 +9,10 @@ services:
       DIFFICULTY: normal
     ports:
       - 19132:19132/udp
-#      - 39132:39132
-#      - 39132:39132/udp
-#      - 39133:39133
-#      - 39133:39133/udp
     volumes:
       - bds:/data
     stdin_open: true
     tty: true
-    sysctls:
-      net.ipv4.ip_local_port_range: 39132 39133
 
 volumes:
   bds: {}
