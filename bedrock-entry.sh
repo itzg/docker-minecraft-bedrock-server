@@ -30,7 +30,7 @@ case ${VERSION^^} in
   1.13)
     VERSION=1.13.0.34
     ;;
-  1.14|PREVIOUS)
+  1.14)
     VERSION=1.14.60.5
     ;;
   1.16.1)
@@ -38,6 +38,12 @@ case ${VERSION^^} in
     ;;
   1.16)
     VERSION=1.16.20.03
+    ;;
+  1.17|PREVIOUS)
+    VERSION=1.17.41.01
+    ;;
+  1.17.41)
+    VERSION=1.17.41.01
     ;;
   LATEST)
     echo "Looking up latest version..."
