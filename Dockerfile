@@ -13,8 +13,6 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-EXPOSE 19132/udp
-
 VOLUME ["/data"]
 
 WORKDIR /data
