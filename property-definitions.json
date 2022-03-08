@@ -67,6 +67,9 @@
   "max-threads": {
     "env": "MAX_THREADS"
   },
+  "compression-threshold": {
+    "env": "COMPRESSION_THRESHOLD"
+  },
   "level-name": {
     "env": "LEVEL_NAME"
   },
