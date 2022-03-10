@@ -160,8 +160,4 @@ set-property --file server.properties --bulk /etc/bds-property-definitions.json
 export LD_LIBRARY_PATH=.
 
 echo "Starting Bedrock server..."
-
-mkfifo /var/run/bds-stdin
-# See https://serverfault.com/a/1088115/196770
-sleep infinity > /var/run/bds-stdin &
-exec ./bedrock_server-"${VERSION}" < /var/run/bds-stdin
+exec ./bedrock_server-${VERSION}
