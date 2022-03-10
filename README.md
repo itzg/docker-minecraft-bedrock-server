@@ -188,7 +188,17 @@ For more information [FoxyNoTail](https://www.youtube.com/watch?v=nWBM4UFm0rQ&t=
 
 For more information about managing Bedrock Dedicated Servers in general, [check out this Reddit post](https://old.reddit.com/user/ProfessorValko/comments/9f438p/bedrock_dedicated_server_tutorial/).
 
-## Executing server commands
+## Sending commands to the server
+
+To send individual commands to the server, exec `mc-send-to-console` inside the container passing the server command as its arguments. For example, the following would disable the `falldamage` gamerule:
+
+```shell
+docker exec $container mc-send-to-console gamerule falldamage false
+```
+
+>  NOTE: to see the output/results of the command, use `docker logs -f $container`
+
+## Interactive server console
 
 Assuming you started container with stdin and tty enabled (such as using `-it`), you can attach to the container's console by its name or ID using:
 
