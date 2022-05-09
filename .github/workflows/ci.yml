@@ -42,7 +42,7 @@ jobs:
 
       - name: Docker Metadata action
         id: meta
-        uses: docker/metadata-action@v3.8.0
+        uses: docker/metadata-action@v4.0.1
         with:
           images: itzg/minecraft-bedrock-server
           flavor: |
