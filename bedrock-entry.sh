@@ -21,9 +21,6 @@ if [[ ${EULA^^} != TRUE ]]; then
 fi
 
 case ${VERSION^^} in
-  1.11)
-    VERSION=1.11.4.2
-    ;;
   1.12)
     VERSION=1.12.0.28
     ;;
@@ -33,28 +30,26 @@ case ${VERSION^^} in
   1.14)
     VERSION=1.14.60.5
     ;;
-  1.16.1)
-    VERSION=1.16.1.02
-    ;;
   1.16)
     VERSION=1.16.20.03
     ;;
-  1.17|PREVIOUS)
+  1.17)
     VERSION=1.17.41.01
     ;;
   1.17.41)
     VERSION=1.17.41.01
     ;;
+  1.18|PREVIOUS)
+    VERSION=1.18.33.02
+    ;;
   LATEST)
     echo "Looking up latest version..."
-    for a in data-platform ; do
-      for i in {1..3}; do
-        DOWNLOAD_URL=$(restify --user-agent=itzg/minecraft-bedrock-server --headers "accept-language:*" --attribute=${a}=serverBedrockLinux ${downloadPage} 2> restify.err | jq -r '.[0].href' || echo '')
-        if [[ ${DOWNLOAD_URL} ]]; then
-          break 2
-        fi
-        sleep 1
-      done
+    for i in {1..3}; do
+      DOWNLOAD_URL=$(restify --user-agent=itzg/minecraft-bedrock-server --headers "accept-language:*" --attribute=data-platform=serverBedrockLinux ${downloadPage} 2> restify.err | jq -r '.[0].href' || echo '')
+      if [[ ${DOWNLOAD_URL} ]]; then
+        break 2
+      fi
+      sleep 1
     done
     if [[ -z ${DOWNLOAD_URL} ]]; then
       DOWNLOAD_URL=$(curl -s https://mc-bds-helper.vercel.app/api/latest)
