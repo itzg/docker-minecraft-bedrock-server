@@ -108,5 +108,9 @@
   "correct-player-movement": {
     "env": "CORRECT_PLAYER_MOVEMENT",
     "allowed": ["true","false"]
+  },
+  "emit-server-telemetry": {
+    "env": "EMIT_SERVER_TELEMETRY",
+    "allowed": ["true","false"]
   }
 }
