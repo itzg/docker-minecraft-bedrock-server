@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-: "${TMP_DIR:=/data/tmp}"
+: "${TMP_DIR:=/tmp}"
 
 if [[ ${DEBUG^^} = TRUE ]]; then
   set -x
