@@ -2,10 +2,13 @@
 
 set -eo pipefail
 
+: "${TMP_DIR:=/data/tmp}"
+
 if [[ ${DEBUG^^} = TRUE ]]; then
   set -x
   curlArgs=(-v)
   echo "DEBUG: running as $(id -a) with $(ls -ld /data)"
+  echo "       current directory is $(pwd)"
 fi
 
 downloadPage=https://www.minecraft.net/en-us/download/server/bedrock
@@ -84,7 +87,8 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
     DOWNLOAD_URL=https://minecraft.azureedge.net/bin-linux/bedrock-server-${VERSION}.zip
   fi
 
-  TMP_ZIP=/tmp/$(basename "${DOWNLOAD_URL}")
+  [[ $TMP_DIR != /tmp ]] && mkdir -p "$TMP_DIR"
+  TMP_ZIP="$TMP_DIR/$(basename "${DOWNLOAD_URL}")"
 
   echo "Downloading Bedrock server version ${VERSION} ..."
   if ! curl "${curlArgs[@]}" -o ${TMP_ZIP} -fsSL ${DOWNLOAD_URL}; then
@@ -120,7 +124,7 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
   # Do not overwrite existing files, which means the cleanup above needs to account for things
   # that MUST be replaced on upgrade
   unzip -q -n ${TMP_ZIP}
-  rm ${TMP_ZIP}
+  [[ $TMP_DIR != /tmp ]] && rm -rf "$TMP_DIR"
 
   chmod +x bedrock_server
   mv bedrock_server bedrock_server-${VERSION}
