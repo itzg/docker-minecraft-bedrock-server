@@ -146,8 +146,8 @@ if [ -n "$allowListUsers" ]; then
   for f in whitelist.json allowlist.json; do
     if [ -f $f ]; then
       rm -rf $f
-      jq -n --arg users "$allowListUsers" '$users | split(",") | map({"name": .})' > $f
     fi
+    jq -n --arg users "$allowListUsers" '$users | split(",") | map({"name": .})' > $f
   done
   # activate server property to enable list usage
   export WHITE_LIST=true
