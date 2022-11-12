@@ -112,5 +112,9 @@
   "emit-server-telemetry": {
     "env": "EMIT_SERVER_TELEMETRY",
     "allowed": ["true","false"]
+  },
+  "enable-lan-visibility": {
+    "env": "ENABLE_LAN_VISIBILITY",
+    "allowed": ["true","false"]
   }
 }
