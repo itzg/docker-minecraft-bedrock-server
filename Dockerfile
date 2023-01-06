@@ -1,8 +1,7 @@
 FROM debian
 
-# ARCH is only set to avoid repetition in Dockerfile since the binary download only supports amd64
-ARG ARCH=arm64
-# ARG ARCH=arm64
+# ARCH is only set to avoid repetition in Dockerfile, use --build-arg ARCH=arm64 for arm cpu
+ARG ARCH=amd64
 
 ARG APT_UPDATE=20210112
 
@@ -11,17 +10,20 @@ RUN apt-get update && \
     curl \
     unzip \
     jq \
-	debian-keyring \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Instal box64
-RUN curl -L https://ryanfortner.github.io/box64-debs/box64.list -o /etc/apt/sources.list.d/box64.list && \
-    curl -L https://ryanfortner.github.io/box64-debs/KEY.gpg | gpg --dearmor | tee /usr/share/keyrings/box64-debs-archive-keyring.gpg && \
+# Instal box64 on arm
+RUN if [ "$ARCH" = "arm64" ] ; then \
+	apt-get update && \
+	DEBIAN_FRONTEND=noninteractive apt-get install -y debian-keyring && \
+	curl -L https://ryanfortner.github.io/box64-debs/box64.list -o /etc/apt/sources.list.d/box64.list && \
+    curl -L https://ryanfortner.github.io/box64-debs/KEY.gpg | gpg --dearmor > /usr/share/keyrings/box64-debs-archive-keyring.gpg && \
 	apt-get update && \
 	DEBIAN_FRONTEND=noninteractive apt-get install -y box64 \
 		&& apt-get clean \
-		&& rm -rf /var/lib/apt/lists/*
+		&& rm -rf /var/lib/apt/lists/* ;\
+	fi
 
 EXPOSE 19132/udp
 

@@ -159,4 +159,8 @@ set-property --file server.properties --bulk /etc/bds-property-definitions.json
 export LD_LIBRARY_PATH=.
 
 echo "Starting Bedrock server..."
-exec box64 ./bedrock_server-${VERSION}
+if [ -f /usr/local/bin/box64 ] ; then
+	exec box64 ./bedrock_server-${VERSION}
+else
+	exec ./bedrock_server-${VERSION}
+fi
