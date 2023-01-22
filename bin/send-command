@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if [[ $* ]]; then
+  if proc=$(find /proc -mindepth 2 -maxdepth 2 -name exe -lname '/data/bedrock_server-*' -printf '%h' -quit); then
+    if [[ $proc ]]; then
+      echo "$@" > "$proc/fd/0"
+    else
+      echo "ERROR: unable to find bedrock server process"
+      exit 2
+    fi
+  else
+    echo "ERROR: failed to search for bedrock server process"
+    exit 2
+  fi
+fi
+

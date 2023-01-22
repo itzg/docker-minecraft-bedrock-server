@@ -48,6 +48,7 @@ RUN easy-add --var version=0.5.0 --var app=mc-monitor --file {{.app}} --from htt
 COPY *.sh /opt/
 
 COPY property-definitions.json /etc/bds-property-definitions.json
+COPY bin/* /usr/local/bin/
 
 # Available versions listed at
 # https://minecraft.gamepedia.com/Bedrock_Edition_1.11.0
