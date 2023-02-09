@@ -10,7 +10,7 @@ The following starts a Bedrock Dedicated Server running a default version and
 exposing the default UDP port: 
 
 ```bash
-docker run -d -it -e EULA=TRUE -p 19132:19132/udp itzg/minecraft-bedrock-server
+docker run -d -it -e EULA=TRUE -p 19132:19132/udp -v mc-bedrock-data:/data itzg/minecraft-bedrock-server
 ```
 
 > **NOTE**: if you plan on running a server for a longer amount of time it is highly recommended using a management layer such as [Docker Compose](#deploying-with-docker-compose) or [Kubernetes](#deploying-with-kubernetes) to allow for incremental reconfiguration and image upgrades.
