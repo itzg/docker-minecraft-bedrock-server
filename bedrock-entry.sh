@@ -3,6 +3,51 @@
 set -eo pipefail
 
 : "${TMP_DIR:=/tmp}"
+: "${PREVIEW:=false}"
+
+function isTrue() {
+  case "${1,,}" in
+  true | on | 1)
+    return 0
+    ;;
+  *)
+    return 1
+    ;;
+  esac
+}
+
+function lookupVersion() {
+  platform=${1:?Missing required platform indicator}
+
+  for i in {1..3}; do
+    DOWNLOAD_URL=$(restify --user-agent=itzg/minecraft-bedrock-server --headers "accept-language:*" --attribute=data-platform="${platform}" "${downloadPage}" 2> restify.err | jq -r '.[0].href' || echo '')
+    if [[ ${DOWNLOAD_URL} ]]; then
+      break 2
+    fi
+    sleep 1
+  done
+  if [[ -z ${DOWNLOAD_URL} ]]; then
+    DOWNLOAD_URL=$(curl -s https://mc-bds-helper.vercel.app/api/latest)
+  fi
+
+  if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
+    VERSION=${BASH_REMATCH[1]}
+  elif [[ $(ls -rv bedrock_server-* 2> /dev/null|head -1) =~ bedrock_server-(.*) ]]; then
+    VERSION=${BASH_REMATCH[1]}
+    echo "WARN Minecraft download page failed, so using existing download of $VERSION"
+    cat restify.err
+  else
+    if [[ -f restify.err ]]; then
+      echo "Failed to extract download URL '${DOWNLOAD_URL}' from ${downloadPage}"
+      cat restify.err
+      rm restify.err
+    else
+      echo "Failed to lookup download URL: ${DOWNLOAD_URL}"
+    fi
+    exit 2
+  fi
+  rm -f restify.err
+}
 
 if [[ ${DEBUG^^} = TRUE ]]; then
   set -x
@@ -45,36 +90,13 @@ case ${VERSION^^} in
   1.18|PREVIOUS)
     VERSION=1.18.33.02
     ;;
+  PREVIEW)
+    echo "Looking up latest preview version..."
+    lookupVersion serverBedrockPreviewLinux
+    ;;
   LATEST)
     echo "Looking up latest version..."
-    for i in {1..3}; do
-      DOWNLOAD_URL=$(restify --user-agent=itzg/minecraft-bedrock-server --headers "accept-language:*" --attribute=data-platform=serverBedrockLinux ${downloadPage} 2> restify.err | jq -r '.[0].href' || echo '')
-      if [[ ${DOWNLOAD_URL} ]]; then
-        break 2
-      fi
-      sleep 1
-    done
-    if [[ -z ${DOWNLOAD_URL} ]]; then
-      DOWNLOAD_URL=$(curl -s https://mc-bds-helper.vercel.app/api/latest)
-    fi
-
-    if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
-      VERSION=${BASH_REMATCH[1]}
-    elif [[ $(ls -rv bedrock_server-* 2> /dev/null|head -1) =~ bedrock_server-(.*) ]]; then
-      VERSION=${BASH_REMATCH[1]}
-      echo "WARN Minecraft download page failed, so using existing download of $VERSION"
-      cat restify.err
-    else
-      if [[ -f restify.err ]]; then
-        echo "Failed to extract download URL '${DOWNLOAD_URL}' from ${downloadPage}"
-        cat restify.err
-        rm restify.err
-      else
-        echo "Failed to lookup download URL: ${DOWNLOAD_URL}"
-      fi
-      exit 2
-    fi
-    rm -f restify.err
+    lookupVersion serverBedrockLinux
     ;;
   *)
     # use the given version exactly
@@ -84,14 +106,18 @@ esac
 if [ ! -f "bedrock_server-${VERSION}" ]; then
 
   if [[ ! ${DOWNLOAD_URL} ]]; then
-    DOWNLOAD_URL=https://minecraft.azureedge.net/bin-linux/bedrock-server-${VERSION}.zip
+    binPath=bin-linux
+    if isTrue "${PREVIEW}"; then
+      binPath=bin-linux-preview
+    fi
+    DOWNLOAD_URL="https://minecraft.azureedge.net/${binPath}/bedrock-server-${VERSION}.zip"
   fi
 
   [[ $TMP_DIR != /tmp ]] && mkdir -p "$TMP_DIR"
   TMP_ZIP="$TMP_DIR/$(basename "${DOWNLOAD_URL}")"
 
   echo "Downloading Bedrock server version ${VERSION} ..."
-  if ! curl "${curlArgs[@]}" -o ${TMP_ZIP} -fsSL ${DOWNLOAD_URL}; then
+  if ! curl "${curlArgs[@]}" -o "${TMP_ZIP}" -fsSL ${DOWNLOAD_URL}; then
     echo "ERROR failed to download from ${DOWNLOAD_URL}"
     echo "      Double check that the given VERSION is valid"
     exit 2
