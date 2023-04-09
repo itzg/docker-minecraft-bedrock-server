@@ -18,7 +18,7 @@ RUN if [ "$ARCH" = "arm64" ] ; then \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y debian-keyring && \
     curl -L https://ryanfortner.github.io/box64-debs/box64.list -o /etc/apt/sources.list.d/box64.list && \
-    curl -L https://ryanfortner.github.io/box64-debs/KEY.gpg | gpg --dearmor > /usr/share/keyrings/box64-debs-archive-keyring.gpg && \
+    curl -L https://ryanfortner.github.io/box64-debs/KEY.gpg | gpg --dearmor | tee /etc/apt/trusted.gpg.d/box64-debs-archive-keyring.gpg && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y box64 \
         && apt-get clean \
