@@ -173,11 +173,14 @@ if [ -n "$allowListUsers" ]; then
   rm -rf "$f"
   jq -c -n --arg users "$allowListUsers" '$users | split(",") | map({"ignoresPlayerLimit":false,"name": .})' > "$f"
   # activate server property to enable list usage
-  export WHITE_LIST=true
-  export ALLOW_LIST=true
+  WHITE_LIST=true
+  ALLOW_LIST=true
 else
   rm -rf whitelist.json allowlist.json
+  : "${WHITE_LIST:=false}"
+  : "${ALLOW_LIST:=false}"
 fi
+export WHITE_LIST ALLOW_LIST
 
 set-property --file server.properties --bulk /etc/bds-property-definitions.json
 
