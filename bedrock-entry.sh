@@ -171,12 +171,10 @@ if [[ -v ALLOW_LIST_USERS || -v WHITE_LIST_USERS ]]; then
 
   if [[ $allowListUsers ]]; then
     echo "Setting allow list"
-    f=allowlist.json
-    rm -rf "$f"
-    jq -c -n --arg users "$allowListUsers" '$users | split(",") | map({"ignoresPlayerLimit":false,"name": .})' > "$f"
+    jq -c -n --arg users "$allowListUsers" '$users | split(",") | map({"ignoresPlayerLimit":false,"name": .})' > "allowlist.json"
     # activate server property to enable list usage
-    WHITE_LIST=true
     ALLOW_LIST=true
+    rm -f whitelist.json
   else
     rm -rf whitelist.json allowlist.json
     WHITE_LIST=false
