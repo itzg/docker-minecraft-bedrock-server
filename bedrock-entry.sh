@@ -19,6 +19,7 @@ function isTrue() {
 function lookupVersion() {
   platform=${1:?Missing required platform indicator}
 
+  # shellcheck disable=SC2034
   for i in {1..3}; do
     DOWNLOAD_URL=$(restify --user-agent=itzg/minecraft-bedrock-server --headers "accept-language:*" --attribute=data-platform="${platform}" "${downloadPage}" 2> restify.err | jq -r '.[0].href' || echo '')
     if [[ ${DOWNLOAD_URL} ]]; then
@@ -183,7 +184,7 @@ if [[ -v ALLOW_LIST_USERS || -v WHITE_LIST_USERS ]]; then
   export WHITE_LIST ALLOW_LIST
 fi
 
-set-property --file server.properties --bulk /etc/bds-property-definitions.json
+mc-image-helper set-properties --definitions /etc/bds-property-definitions.json server.properties
 
 export LD_LIBRARY_PATH=.
 

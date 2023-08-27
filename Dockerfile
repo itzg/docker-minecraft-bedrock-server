@@ -1,4 +1,7 @@
-FROM debian
+# using focal, rather than jammy to align with latest in
+# https://github.com/itzg/docker-minecraft-server/blob/master/.github/workflows/build-multiarch.yml
+ARG BASE_IMAGE=eclipse-temurin:17-jre-focal
+FROM ${BASE_IMAGE}
 
 # hook into docker BuildKit --platform support
 # see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
@@ -38,11 +41,17 @@ RUN chmod +x /usr/local/bin/easy-add
 
 RUN easy-add --var version=0.4.0 --var app=entrypoint-demoter --file {{.app}} --from https://github.com/itzg/{{.app}}/releases/download/v{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
 
-RUN easy-add --var version=0.1.1 --var app=set-property --file {{.app}} --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
-
 RUN easy-add --var version=1.6.2 --var app=restify --file {{.app}} --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
 
 RUN easy-add --var version=0.5.0 --var app=mc-monitor --file {{.app}} --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
+
+ARG MC_HELPER_VERSION=1.34.6
+ARG MC_HELPER_BASE_URL=https://github.com/itzg/mc-image-helper/releases/download/${MC_HELPER_VERSION}
+# used for cache busting local copy of mc-image-helper
+ARG MC_HELPER_REV=1
+RUN curl -fsSL ${MC_HELPER_BASE_URL}/mc-image-helper-${MC_HELPER_VERSION}.tgz \
+  | tar -C /usr/share -zxf - \
+  && ln -s /usr/share/mc-image-helper-${MC_HELPER_VERSION}/bin/mc-image-helper /usr/bin
 
 COPY *.sh /opt/
 
