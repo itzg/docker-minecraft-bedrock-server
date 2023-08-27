@@ -43,10 +43,10 @@ function resolveXuid() {
     echo "$value"
     return
   fi
-  
+
   local encoded=$(jq -sRr @uri <<< "$value")
   local xuid=$(curl "${debugCurlArgs[@]}" -fsSL -A "itzg/minecraft-bedrock-server" "$RESOLVE_XUID_API_URL/$encoded" 2>/dev/null | jq -r '.xuid // empty')
-  
+
   echo "${xuid:-$value}"
 }
 
@@ -125,7 +125,8 @@ function lookupDownloadUrl() {
 function lookupDownloadUrlFromMinecraftServices() {
     platform=${1:?Missing required platform indicator}
 
-    for url in "$DOWNLOAD_LINKS_URL" "$DOWNLOAD_SECONDARY_LINKS_URL"; do
+    # shellcheck disable=SC2034
+  for url in "$DOWNLOAD_LINKS_URL" "$DOWNLOAD_SECONDARY_LINKS_URL"; do
       if downloadUrl=$(
           curl "${debugCurlArgs[@]}" -fsSL "${url}" |
             jq --arg platform "$platform" -rR '

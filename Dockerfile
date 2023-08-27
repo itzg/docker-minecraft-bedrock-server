@@ -1,4 +1,7 @@
-FROM debian
+# using focal, rather than jammy to align with latest in
+# https://github.com/itzg/docker-minecraft-server/blob/master/.github/workflows/build-multiarch.yml
+ARG BASE_IMAGE=eclipse-temurin:17-jre-focal
+FROM ${BASE_IMAGE}
 
 # hook into docker BuildKit --platform support
 # see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
@@ -50,6 +53,14 @@ ARG MC_SERVER_RUNNER_VERSION=1.17.0
 RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --var version=${MC_SERVER_RUNNER_VERSION} --var app=mc-server-runner --file {{.app}} \
   --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
+
+ARG MC_HELPER_VERSION=1.34.6
+ARG MC_HELPER_BASE_URL=https://github.com/itzg/mc-image-helper/releases/download/${MC_HELPER_VERSION}
+# used for cache busting local copy of mc-image-helper
+ARG MC_HELPER_REV=1
+RUN curl -fsSL ${MC_HELPER_BASE_URL}/mc-image-helper-${MC_HELPER_VERSION}.tgz \
+  | tar -C /usr/share -zxf - \
+  && ln -s /usr/share/mc-image-helper-${MC_HELPER_VERSION}/bin/mc-image-helper /usr/bin
 
 COPY *.sh /opt/
 
