@@ -45,7 +45,7 @@ RUN easy-add --var version=1.6.2 --var app=restify --file {{.app}} --from https:
 
 RUN easy-add --var version=0.5.0 --var app=mc-monitor --file {{.app}} --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
 
-ARG MC_HELPER_VERSION=1.34.6
+ARG MC_HELPER_VERSION=1.35.0
 ARG MC_HELPER_BASE_URL=https://github.com/itzg/mc-image-helper/releases/download/${MC_HELPER_VERSION}
 # used for cache busting local copy of mc-image-helper
 ARG MC_HELPER_REV=1
