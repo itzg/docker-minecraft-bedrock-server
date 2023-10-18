@@ -165,8 +165,8 @@ if [ -n "$OPS" ] || [ -n "$MEMBERS" ] || [ -n "$VISITORS" ]; then
   ]| flatten' > permissions.json
 fi
 
-if [[ -v ALLOW_LIST_USERS ]]; then
-  allowListUsers=${ALLOW_LIST_USERS}
+if [[ -n "$ALLOW_LIST_USERS" || -n "$WHITE_LIST_USERS" ]]; then
+  allowListUsers=${ALLOW_LIST_USERS:-$WHITE_LIST_USERS}
 
   if [[ "$allowListUsers" ]]; then
     echo "Setting allow list"
@@ -174,12 +174,15 @@ if [[ -v ALLOW_LIST_USERS ]]; then
     # activate server property to enable list usage
     ALLOW_LIST=true
   else
-    rm -f allowlist.json
-    # deactivate server property if no allow list is specified
     ALLOW_LIST=false
+    rm allowlist.json
   fi
-  export ALLOW_LIST
+else
+  ALLOW_LIST=false
+  rm allowlist.json
 fi
+
+export ALLOW_LIST
 
 set-property --file server.properties --bulk /etc/bds-property-definitions.json
 
