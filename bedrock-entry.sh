@@ -165,22 +165,20 @@ if [ -n "$OPS" ] || [ -n "$MEMBERS" ] || [ -n "$VISITORS" ]; then
   ]| flatten' > permissions.json
 fi
 
+if [[ -v ALLOW_LIST_USERS ]]; then
+  allowListUsers=${ALLOW_LIST_USERS}
 
-if [[ -v ALLOW_LIST_USERS || -v WHITE_LIST_USERS ]]; then
-  allowListUsers=${ALLOW_LIST_USERS:-${WHITE_LIST_USERS}}
-
-  WHITE_LIST=false
-  rm -f whitelist.json
-  if [[ $allowListUsers ]]; then
+  if [[ "$allowListUsers" ]]; then
     echo "Setting allow list"
     jq -c -n --arg users "$allowListUsers" '$users | split(",") | map({"ignoresPlayerLimit":false,"name": .})' > "allowlist.json"
     # activate server property to enable list usage
     ALLOW_LIST=true
   else
-    rm -rf allowlist.json
+    rm -f allowlist.json
+    # deactivate server property if no allow list is specified
     ALLOW_LIST=false
   fi
-  export WHITE_LIST ALLOW_LIST
+  export ALLOW_LIST
 fi
 
 set-property --file server.properties --bulk /etc/bds-property-definitions.json
