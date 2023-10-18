@@ -181,7 +181,7 @@ else
   ALLOW_LIST=false
   rm allowlist.json
 fi
-
+sed -i '/^white-list=.*/d' server.properties #Removes white-list= line from server.properties
 export ALLOW_LIST
 
 set-property --file server.properties --bulk /etc/bds-property-definitions.json
