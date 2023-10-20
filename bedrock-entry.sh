@@ -175,11 +175,11 @@ if [[ -n "$ALLOW_LIST_USERS" || -n "$WHITE_LIST_USERS" ]]; then
     ALLOW_LIST=true
   else
     ALLOW_LIST=false
-    rm allowlist.json
+    rm -f allowlist.json
   fi
 else
   ALLOW_LIST=false
-  rm allowlist.json
+  rm -f allowlist.json
 fi
 sed -i '/^white-list=.*/d' server.properties #Removes white-list= line from server.properties
 export ALLOW_LIST
