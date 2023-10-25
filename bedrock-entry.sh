@@ -129,12 +129,16 @@ if [ ! -f "bedrock_server-${VERSION}" ]; then
   bkupDir=backup-pre-${VERSION}
   # fixup any previous interrupted upgrades
   rm -rf "${bkupDir}"
-  for d in behavior_packs definitions minecraftpe resource_packs structures treatments world_templates
-  do
-    if [ -d $d ]; then
-      mkdir -p $bkupDir
+  for d in behavior_packs definitions minecraftpe resource_packs structures treatments world_templates; do
+    if [[ -d $d && -n "$(ls $d)" ]]; then
+      mkdir -p $bkupDir/$d
       echo "Backing up $d into $bkupDir"
-      mv $d $bkupDir
+      if [[ "$d" == "resource_packs" ]]; then
+        mv $d/{chemistry,vanilla} $bkupDir/
+        [[ -n "$(ls $d)" ]] && cp -a $d/* $bkupDir/
+      else
+        mv $d/* $bkupDir/
+      fi
     fi
   done
 
