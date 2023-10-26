@@ -48,8 +48,7 @@
     "allowed": ["true","false"]
   },
   "white-list": {
-    "env": "WHITE_LIST",
-    "allowed": ["true","false"]
+    "remove": true
   },
   "allow-list": {
     "env": "ALLOW_LIST",
