@@ -151,10 +151,12 @@ There are two ways to handle a whitelist:
 
 The first is to set the `ALLOW_LIST` environment variable to true and map in an [allowlist.json](https://minecraft.wiki/w/Whitelist.json) file (previously known as "whitelist.json") that is custom-crafted to the container. 
 
-The other is to set the `ALLOW_LIST_USERS` environment variable to a comma-separated list of gamer tag usernames that should be allowed. The server will look up the names and add in the XUID to match the player.
+The other is to set the `ALLOW_LIST_USERS` environment variable to a comma-separated list of gamer tag usernames and their corresponding XUIDs. Each username should be followed by its XUID, separated by a colon. The server will use these details to match the player.
+
+There are various tools to look XUIDs up online and they are also printed to the log when a player joins the server.
 
 ```shell
--e ALLOW_LIST_USERS="player1,player2,player3"
+-e ALLOW_LIST_USERS="player1:1234567890,player2:0987654321"
 ```
 
 ## Mods Addons 

@@ -163,11 +163,15 @@ if [[ -n "$OPS" || -n "$MEMBERS" || -n "$VISITORS" ]]; then
 fi
 
 if [[ -n "$ALLOW_LIST_USERS" || -n "$WHITE_LIST_USERS" ]]; then
-  allowListUsers=${ALLOW_LIST_USERS:-$WHITE_LIST_USERS}
+  allowListUsers=$(echo "${ALLOW_LIST_USERS:-$WHITE_LIST_USERS}" | tr -d '\n' | tr -d '\r')
 
   if [[ "$allowListUsers" ]]; then
     echo "Setting allow list"
-    jq -c -n --arg users "$allowListUsers" '$users | split(",") | map({"ignoresPlayerLimit":false,"name": .})' > "allowlist.json"
+    if [[ "$allowListUsers" != *":"* ]]; then
+      jq -c -n --arg users "$allowListUsers" '$users | split(",") | map({"ignoresPlayerLimit":false,"name": .})' > "allowlist.json"
+    else
+      jq -c -n --arg users "$allowListUsers" '$users | split(",") | map(split(":") | {"ignoresPlayerLimit":false,"name": .[0], "xuid": .[1]})' > "allowlist.json"
+    fi
     # activate server property to enable list usage
     ALLOW_LIST=true
   else
