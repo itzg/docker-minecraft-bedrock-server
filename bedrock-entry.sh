@@ -163,7 +163,7 @@ if [[ -n "$OPS" || -n "$MEMBERS" || -n "$VISITORS" ]]; then
 fi
 
 if [[ -n "$ALLOW_LIST_USERS" || -n "$WHITE_LIST_USERS" ]]; then
-  allowListUsers=$(echo "${ALLOW_LIST_USERS:-$WHITE_LIST_USERS}" | tr -d '\n' | tr -d '\r')
+  allowListUsers=${ALLOW_LIST_USERS:-$WHITE_LIST_USERS}
 
   if [[ "$allowListUsers" ]]; then
     echo "Setting allow list"
