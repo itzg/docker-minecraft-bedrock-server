@@ -167,7 +167,11 @@ if [[ -n "$ALLOW_LIST_USERS" || -n "$WHITE_LIST_USERS" ]]; then
 
   if [[ "$allowListUsers" ]]; then
     echo "Setting allow list"
-    jq -c -n --arg users "$allowListUsers" '$users | split(",") | map({"ignoresPlayerLimit":false,"name": .})' > "allowlist.json"
+    if [[ "$allowListUsers" != *":"* ]]; then
+      jq -c -n --arg users "$allowListUsers" '$users | split(",") | map({"ignoresPlayerLimit":false,"name": .})' > "allowlist.json"
+    else
+      jq -c -n --arg users "$allowListUsers" '$users | split(",") | map(split(":") | {"ignoresPlayerLimit":false,"name": .[0], "xuid": .[1]})' > "allowlist.json"
+    fi
     # activate server property to enable list usage
     ALLOW_LIST=true
   else
