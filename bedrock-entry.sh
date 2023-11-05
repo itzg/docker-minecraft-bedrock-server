@@ -178,9 +178,6 @@ if [[ -n "$ALLOW_LIST_USERS" || -n "$WHITE_LIST_USERS" ]]; then
     ALLOW_LIST=false
     rm -f allowlist.json
   fi
-else
-  ALLOW_LIST=false
-  rm -f allowlist.json
 fi
 
 # prevent issue with bind mounted server.properties which can not be moved (sed tries to move the file when '-i' is used)
