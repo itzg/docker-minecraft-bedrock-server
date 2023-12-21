@@ -134,15 +134,15 @@ are also printed to the log when a player joins. There are 3 levels of permissio
 
 - `OPS` is used to define operators on the server.  
 ```shell
--e OPS "1234567890,0987654321"
+-e OPS="1234567890,0987654321"
 ```
 - `MEMBERS` is used to define the members on the server.
 ```shell
--e MEMBERS "1234567890,0987654321"
+-e MEMBERS="1234567890,0987654321"
 ```
 - `VISITORS` is used to define visitors on the server.
 ```shell
--e VISITORS "1234567890,0987654321"
+-e VISITORS="1234567890,0987654321"
 ```
 
 ## Allowlist
