@@ -202,8 +202,8 @@ if isTrue "${ENABLE_SSH}"; then
 
   # For ssh access by tools, export the current password.
   # Use rcon's format to align with Java, as Java uses the rcon password for SSH as well.
-  echo "password=${RCON_PASSWORD}" > "$HOME/.rcon-cli.env"
-  echo "password: \"${RCON_PASSWORD}\"" > "$HOME/.rcon-cli.yaml"
+  echo "password=${RCON_PASSWORD}" > "$HOME/.remote-console.env"
+  echo "password: \"${RCON_PASSWORD}\"" > "$HOME/.remote-console.yaml"
 fi
 
 echo "Starting Bedrock server..."
