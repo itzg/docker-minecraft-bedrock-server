@@ -50,6 +50,8 @@ if [[ ${DEBUG^^} == TRUE ]]; then
   echo "       current directory is $(pwd)"
 fi
 
+export HOME=/data
+
 downloadPage=https://www.minecraft.net/en-us/download/server/bedrock
 
 if [[ ${EULA^^} != TRUE ]]; then
@@ -197,6 +199,11 @@ if isTrue "${ENABLE_SSH}"; then
     RCON_PASSWORD=$(openssl rand -hex 12)
     export RCON_PASSWORD
   fi
+
+  # For ssh access by tools, export the current password.
+  # Use rcon's format to align with Java, as Java uses the rcon password for SSH as well.
+  echo "password=${RCON_PASSWORD}" > "$HOME/.rcon-cli.env"
+  echo "password: \"${RCON_PASSWORD}\"" > "$HOME/.rcon-cli.yaml"
 fi
 
 echo "Starting Bedrock server..."
