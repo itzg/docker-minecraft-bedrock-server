@@ -50,6 +50,8 @@ if [[ ${DEBUG^^} == TRUE ]]; then
   echo "       current directory is $(pwd)"
 fi
 
+export HOME=/data
+
 downloadPage=https://www.minecraft.net/en-us/download/server/bedrock
 
 if [[ ${EULA^^} != TRUE ]]; then
@@ -190,9 +192,23 @@ set-property --file server.properties --bulk /etc/bds-property-definitions.json
 
 export LD_LIBRARY_PATH=.
 
+mcServerRunnerArgs=()
+if isTrue "${ENABLE_SSH}"; then
+  mcServerRunnerArgs+=(--remote-console)
+  if ! [[ -v RCON_PASSWORD ]]; then
+    RCON_PASSWORD=$(openssl rand -hex 12)
+    export RCON_PASSWORD
+  fi
+
+  # For ssh access by tools, export the current password.
+  # Use rcon's format to align with Java, as Java uses the rcon password for SSH as well.
+  echo "password=${RCON_PASSWORD}" > "$HOME/.remote-console.env"
+  echo "password: \"${RCON_PASSWORD}\"" > "$HOME/.remote-console.yaml"
+fi
+
 echo "Starting Bedrock server..."
 if [[ -f /usr/local/bin/box64 ]] ; then
-    exec box64 ./"bedrock_server-${VERSION}"
+    exec mc-server-runner "${mcServerRunnerArgs[@]}" box64 ./"bedrock_server-${VERSION}"
 else
-    exec ./"bedrock_server-${VERSION}"
+    exec mc-server-runner "${mcServerRunnerArgs[@]}" ./"bedrock_server-${VERSION}"
 fi

@@ -9,19 +9,20 @@ ARG TARGETVARIANT
 RUN apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
     curl \
+    openssl \
     unzip \
     jq \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Instal box64 on arm
+# Install box64 on arm
 RUN if [ "$TARGETARCH" = "arm64" ] ; then \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y debian-keyring && \
     curl -L https://ryanfortner.github.io/box64-debs/box64.list -o /etc/apt/sources.list.d/box64.list && \
     curl -L https://ryanfortner.github.io/box64-debs/KEY.gpg | gpg --dearmor | tee /etc/apt/trusted.gpg.d/box64-debs-archive-keyring.gpg && \
     apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y box64-generic-arm \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y box64-arm64 \
         && apt-get clean \
         && rm -rf /var/lib/apt/lists/* ;\
     fi
@@ -55,6 +56,11 @@ RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
 ARG MC_MONITOR_VERSION=0.12.6
 RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --var version=${MC_MONITOR_VERSION} --var app=mc-monitor --file {{.app}} \
+  --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
+
+ARG MC_SERVER_RUNNER_VERSION=1.10.0
+RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
+  --var version=${MC_SERVER_RUNNER_VERSION} --var app=mc-server-runner --file {{.app}} \
   --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
 
 COPY *.sh /opt/
