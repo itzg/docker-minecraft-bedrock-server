@@ -193,6 +193,10 @@ export LD_LIBRARY_PATH=.
 mcServerRunnerArgs=()
 if isTrue "${ENABLE_SSH}"; then
   mcServerRunnerArgs+=(--remote-console)
+  if ! [[ -v RCON_PASSWORD ]]; then
+    RCON_PASSWORD=$(openssl rand -hex 12)
+    export RCON_PASSWORD
+  fi
 fi
 
 echo "Starting Bedrock server..."

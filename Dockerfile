@@ -9,12 +9,13 @@ ARG TARGETVARIANT
 RUN apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
     curl \
+    openssl \
     unzip \
     jq \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Instal box64 on arm
+# Install box64 on arm
 RUN if [ "$TARGETARCH" = "arm64" ] ; then \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y debian-keyring && \
