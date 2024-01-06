@@ -190,9 +190,14 @@ set-property --file server.properties --bulk /etc/bds-property-definitions.json
 
 export LD_LIBRARY_PATH=.
 
+mcServerRunnerArgs=()
+if isTrue "${ENABLE_SSH}"; then
+  mcServerRunnerArgs+=(--remote-console)
+fi
+
 echo "Starting Bedrock server..."
 if [[ -f /usr/local/bin/box64 ]] ; then
-    exec box64 ./"bedrock_server-${VERSION}"
+    exec mc-server-runner "${mcServerRunnerArgs[@]}" box64 ./"bedrock_server-${VERSION}"
 else
-    exec ./"bedrock_server-${VERSION}"
+    exec mc-server-runner "${mcServerRunnerArgs[@]}" ./"bedrock_server-${VERSION}"
 fi

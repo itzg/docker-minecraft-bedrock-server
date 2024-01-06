@@ -57,6 +57,11 @@ RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --var version=${MC_MONITOR_VERSION} --var app=mc-monitor --file {{.app}} \
   --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
 
+ARG MC_SERVER_RUNNER_VERSION=1.10.0
+RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
+  --var version=${MC_SERVER_RUNNER_VERSION} --var app=mc-server-runner --file {{.app}} \
+  --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
+
 COPY *.sh /opt/
 
 COPY property-definitions.json /etc/bds-property-definitions.json
