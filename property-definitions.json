@@ -17,6 +17,10 @@
       "2": "adventure"
     }
   },
+  "force-gamemode": {
+    "env": "FORCE_GAMEMODE",
+    "allowed": ["true","false"]
+  },
   "difficulty": {
     "env": "DIFFICULTY",
     "allowed": ["easy","peaceful","normal","hard"],
