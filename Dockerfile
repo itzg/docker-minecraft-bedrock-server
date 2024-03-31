@@ -6,26 +6,10 @@ ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
 
-RUN apt-get update && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    curl \
-    openssl \
-    unzip \
-    jq \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+RUN --mount=target=/build,source=build /build/install-packages
 
-# Install box64 on arm
-RUN if [ "$TARGETARCH" = "arm64" ] ; then \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y debian-keyring && \
-    curl -L https://ryanfortner.github.io/box64-debs/box64.list -o /etc/apt/sources.list.d/box64.list && \
-    curl -L https://ryanfortner.github.io/box64-debs/KEY.gpg | gpg --dearmor | tee /etc/apt/trusted.gpg.d/box64-debs-archive-keyring.gpg && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y box64-arm64 \
-        && apt-get clean \
-        && rm -rf /var/lib/apt/lists/* ;\
-    fi
+ARG BOX64_PACKAGE=box64
+RUN --mount=target=/build,source=build BOX64_PACKAGE=$BOX64_PACKAGE /build/setup-arm64
 
 EXPOSE 19132/udp
 
