@@ -52,7 +52,7 @@ For Minecraft Java Edition you'll need to use this image instead:
 
 ### Server Properties
 
-The following environment variables will set the equivalent property in `server.properties`, where each [is described here](https://minecraft.wiki/w/Server.properties#Bedrock_Edition_3).
+The following environment variables will set the equivalent property in `server.properties`, where each [is described here](https://minecraft.wiki/w/Server.properties#Option_keys).
 
 - `SERVER_NAME`
 - `SERVER_PORT`
