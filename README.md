@@ -224,26 +224,33 @@ When finished, detach from the server console using Ctrl-p, Ctrl-q
 ## Deploying with Docker Compose
 
 The [examples](examples) directory contains [an example Docker compose file](examples/docker-compose.yml) that declares:
-- a service running the bedrock server container and exposing UDP port 19132
-- a volume to be attached to the service
+- a service running the bedrock server container and exposing UDP port 19132. In the example is named "bds", short for "Bedrock Dedicated Server", but you can name the service whatever you want
+- a volume attached to the service at the container path `/data`
 
-The service configuration includes some examples of configuring the server properties via environment variables:
 ```yaml
-environment:
-  EULA: "TRUE"
-  GAMEMODE: survival
-  DIFFICULTY: normal
+services:
+  bds:
+    image: itzg/minecraft-bedrock-server
+    environment:
+      EULA: "TRUE"
+    ports:
+      - "19132:19132/udp"
+    volumes:
+      - ./data:/data
+    stdin_open: true
+    tty: true
 ```
 
-From with in the `examples` directory, you can deploy the composition by using:
+Start the server and run in the background using:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
-You can follow the logs using:
+You can follow the logs at any time using:
+
 ```bash
-docker-compose logs -f bds
+docker compose logs -f
 ```
 
 ## Deploying with Kubernetes
