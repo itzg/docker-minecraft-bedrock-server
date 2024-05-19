@@ -10,7 +10,7 @@
   },
   "gamemode": {
     "env": "GAMEMODE",
-    "allowed": ["survival","creative","adventure"],
+    "allowed": ["survival", "creative", "adventure"],
     "mappings": {
       "0": "survival",
       "1": "creative",
@@ -19,11 +19,11 @@
   },
   "force-gamemode": {
     "env": "FORCE_GAMEMODE",
-    "allowed": ["true","false"]
+    "allowed": ["true", "false"]
   },
   "difficulty": {
     "env": "DIFFICULTY",
-    "allowed": ["easy","peaceful","normal","hard"],
+    "allowed": ["easy", "peaceful", "normal", "hard"],
     "mappings": {
       "0": "peaceful",
       "1": "easy",
@@ -33,7 +33,7 @@
   },
   "level-type": {
     "env": "LEVEL_TYPE",
-    "allowed": ["DEFAULT","FLAT","LEGACY"],
+    "allowed": ["DEFAULT", "FLAT", "LEGACY"],
     "mappings": {
       "flat": "FLAT",
       "legacy": "LEGACY",
@@ -42,22 +42,22 @@
   },
   "allow-cheats": {
     "env": "ALLOW_CHEATS",
-    "allowed": ["true","false"]
+    "allowed": ["true", "false"]
   },
   "max-players": {
     "env": "MAX_PLAYERS"
   },
   "online-mode": {
     "env": "ONLINE_MODE",
-    "allowed": ["true","false"]
+    "allowed": ["true", "false"]
   },
   "white-list": {
     "env": "WHITE_LIST",
-    "allowed": ["true","false"]
+    "allowed": ["true", "false"]
   },
   "allow-list": {
     "env": "ALLOW_LIST",
-    "allowed": ["true","false"]
+    "allowed": ["true", "false"]
   },
   "view-distance": {
     "env": "VIEW_DISTANCE"
@@ -82,15 +82,15 @@
   },
   "default-player-permission-level": {
     "env": "DEFAULT_PLAYER_PERMISSION_LEVEL",
-    "allowed": ["visitor","member","operator"]
+    "allowed": ["visitor", "member", "operator"]
   },
   "texturepack-required": {
     "env": "TEXTUREPACK_REQUIRED",
-    "allowed": ["true","false"]
+    "allowed": ["true", "false"]
   },
   "server-authoritative-movement": {
     "env": "SERVER_AUTHORITATIVE_MOVEMENT",
-    "allowed": ["server-auth","client-auth","server-auth-with-rewind"],
+    "allowed": ["server-auth", "client-auth", "server-auth-with-rewind"],
     "mappings": {
       "true": "server-auth",
       "false": "client-auth"
@@ -111,14 +111,50 @@
   },
   "correct-player-movement": {
     "env": "CORRECT_PLAYER_MOVEMENT",
-    "allowed": ["true","false"]
+    "allowed": ["true", "false"]
   },
   "emit-server-telemetry": {
     "env": "EMIT_SERVER_TELEMETRY",
-    "allowed": ["true","false"]
+    "allowed": ["true", "false"]
   },
   "enable-lan-visibility": {
     "env": "ENABLE_LAN_VISIBILITY",
-    "allowed": ["true","false"]
+    "allowed": ["true", "false"]
+  },
+  "msa-gamertags-only": {
+    "env": "MSA_GAMERTAGS_ONLY",
+    "allowed": ["true", "false"]
+  },
+  "item-transaction-logging-enabled": {
+    "env": "ITEM_TRANSACTION_LOGGING_ENABLED",
+    "allowed": ["true", "false"]
+  },
+  "disable-custom-skins": {
+    "env": "DISABLE_CUSTOM_SKINS",
+    "allowed": ["true", "false"]
+  },
+  "disable-persona": {
+    "env": "DISABLE_PERSONA",
+    "allowed": ["true", "false"]
+  },
+  "chat-restriction": {
+    "env": "CHAT_RESTRICTION",
+    "allowed": ["None", "Dropped", "Disabled"],
+    "mappings": {
+      "none": "none",
+      "dropped": "Dropped",
+      "disabled": "Disabled"
+    }
+  },
+  "op-permission-level": {
+    "env": "OP_PERMISSION_LEVEL"
+  },
+  "compression-algorithm": {
+    "env": "COMPRESSION_ALGORITHM",
+    "allowed": ["zlib", "snappy"]
+  },
+  "block-network-ids-are-hashes": {
+    "env": "BLOCK_NETWORK_IDS_ARE_HASHES",
+    "allowed": ["true", "false"]
   }
 }
