@@ -53,7 +53,9 @@ For Minecraft Java Edition you'll need to use this image instead:
 ### Server Properties
 
 The following environment variables will set the equivalent property in `server.properties`, where each [is described here](https://minecraft.wiki/w/Server.properties#Option_keys).
+Got it, here's the list with each item surrounded by backticks and prefixed with a hyphen:
 
+```
 - `SERVER_NAME`
 - `SERVER_PORT`
 - `SERVER_PORT_V6`
@@ -78,6 +80,15 @@ The following environment variables will set the equivalent property in `server.
 - `PLAYER_MOVEMENT_DISTANCE_THRESHOLD`
 - `PLAYER_MOVEMENT_DURATION_THRESHOLD_IN_MS`
 - `CORRECT_PLAYER_MOVEMENT`
+- `MSA_GAMERTAGS_ONLY`
+- `ITEM_TRANSACTION_LOGGING_ENABLED`
+- `DISABLE_CUSTOM_SKINS`
+- `DISABLE_PERSONA`
+- `CHAT_RESTRICTION`
+- `OP_PERMISSION_LEVEL`
+- `COMPRESSION_ALGORITHM`
+- `BLOCK_NETWORK_IDS_ARE_HASHES`
+```
 
 For example, to configure a flat, creative server instead of the default use:
 
