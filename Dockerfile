@@ -22,27 +22,27 @@ ENTRYPOINT ["/usr/local/bin/entrypoint-demoter", "--match", "/data", "--debug", 
 ARG APPS_REV=1
 ARG GITHUB_BASEURL=https://github.com
 
-ARG EASY_ADD_VERSION=0.8.2
+ARG EASY_ADD_VERSION=0.8.6
 ADD ${GITHUB_BASEURL}/itzg/easy-add/releases/download/${EASY_ADD_VERSION}/easy-add_${TARGETOS}_${TARGETARCH}${TARGETVARIANT} /usr/bin/easy-add
 RUN chmod +x /usr/bin/easy-add
 
-ARG ENTRYPOINT_DEMOTER_VERSION=0.4.2
+ARG ENTRYPOINT_DEMOTER_VERSION=0.4.4
 RUN easy-add --var version=${ENTRYPOINT_DEMOTER_VERSION} --var app=entrypoint-demoter --file {{.app}} --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/v{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
 
-ARG SET_PROPERTY_VERSION=0.1.1
+ARG SET_PROPERTY_VERSION=0.1.2
 RUN easy-add --var version=${SET_PROPERTY_VERSION} --var app=set-property --file {{.app}} --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
 
-ARG RESTIFY_VERSION=1.7.2
+ARG RESTIFY_VERSION=1.7.3
 RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --var version=${RESTIFY_VERSION} --var app=restify --file {{.app}} \
   --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
 
-ARG MC_MONITOR_VERSION=0.12.6
+ARG MC_MONITOR_VERSION=0.12.12
 RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --var version=${MC_MONITOR_VERSION} --var app=mc-monitor --file {{.app}} \
   --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
 
-ARG MC_SERVER_RUNNER_VERSION=1.12.1
+ARG MC_SERVER_RUNNER_VERSION=1.12.2
 RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --var version=${MC_SERVER_RUNNER_VERSION} --var app=mc-server-runner --file {{.app}} \
   --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
