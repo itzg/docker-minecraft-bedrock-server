@@ -53,12 +53,9 @@ For Minecraft Java Edition you'll need to use this image instead:
 ### Server Properties
 
 The following environment variables will set the equivalent property in `server.properties`, where each [is described here](https://minecraft.wiki/w/Server.properties#Option_keys).
-Got it, here's the list with each item surrounded by backticks and prefixed with a hyphen:
+Typically, each property is configured instead by the UPPER_SNAKE_CASE equivalent. 
 
-```
 - `SERVER_NAME`
-- `SERVER_PORT`
-- `SERVER_PORT_V6`
 - `GAMEMODE`
 - `FORCE_GAMEMODE`
 - `DIFFICULTY`
@@ -88,7 +85,6 @@ Got it, here's the list with each item surrounded by backticks and prefixed with
 - `OP_PERMISSION_LEVEL`
 - `COMPRESSION_ALGORITHM`
 - `BLOCK_NETWORK_IDS_ARE_HASHES`
-```
 
 For example, to configure a flat, creative server instead of the default use:
 
