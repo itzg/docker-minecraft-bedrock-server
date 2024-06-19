@@ -33,15 +33,9 @@ For Minecraft Java Edition you'll need to use this image instead:
 
 - `EULA` (no default) : must be set to `TRUE` to 
   accept the [Minecraft End User License Agreement](https://minecraft.net/terms)
-- `VERSION` (`LATEST`) : can be set to a specific server version or the following special values can be used:
+- `VERSION` (default is `LATEST`) : can be set to a specific server version or the following special values can be used:
   - `LATEST` : determines the latest (non-preview) version and can be used to auto-upgrade on container start
   - `PREVIEW` : determines the latest preview version and will auto-upgrade
-  - `PREVIOUS` : uses the previously maintained major version. Useful when the mobile app is gradually being upgraded across devices
-  - `1.11` : the latest version of 1.11
-  - `1.12` : the latest version of 1.12
-  - `1.13` : the latest version of 1.13
-  - `1.14` : the latest version of 1.14
-  - `1.16` : the latest version of 1.16
   - otherwise any specific server version can be provided. If it is a preview version, also set `PREVIEW` to "true"
 - `UID` (default derived from `/data` owner) : can be set to a specific user ID to run the
   bedrock server process
