@@ -7,7 +7,7 @@
 ## Quickstart
 
 The following starts a Bedrock Dedicated Server running a default version and
-exposing the default UDP port: 
+exposing the default UDP port:
 
 ```bash
 docker run -d -it -e EULA=TRUE -p 19132:19132/udp -v mc-bedrock-data:/data itzg/minecraft-bedrock-server
@@ -31,7 +31,7 @@ For Minecraft Java Edition you'll need to use this image instead:
 
 ### Container Specific
 
-- `EULA` (no default) : must be set to `TRUE` to 
+- `EULA` (no default) : must be set to `TRUE` to
   accept the [Minecraft End User License Agreement](https://minecraft.net/terms)
 - `VERSION` (default is `LATEST`) : can be set to a specific server version or the following special values can be used:
   - `LATEST` : determines the latest (non-preview) version and can be used to auto-upgrade on container start
@@ -47,7 +47,7 @@ For Minecraft Java Edition you'll need to use this image instead:
 ### Server Properties
 
 The following environment variables will set the equivalent property in `server.properties`, where each [is described here](https://minecraft.wiki/w/Server.properties#Option_keys).
-Typically, each property is configured instead by the UPPER_SNAKE_CASE equivalent. 
+Typically, each property is configured instead by the UPPER_SNAKE_CASE equivalent.
 
 - `SERVER_NAME`
 - `GAMEMODE`
@@ -90,9 +90,9 @@ docker run -d -it --name bds-flat-creative \
 
 ## Exposed Ports
 
-- **UDP** 19132 : the Bedrock server port. 
+- **UDP** 19132 : the Bedrock server port.
   **NOTE** that you must append `/udp` when exposing the port, such as `-p 19132:19132/udp`
-  
+
 ## Volumes
 
 - `/data` : the location where the downloaded server is expanded and ran. Also contains the
@@ -134,7 +134,7 @@ in the "LAN Games" part of the "Friends" tab, such as:
 The Bedrock Dedicated Server requires permissions be defined with XUIDs. There are various tools to look these up online and they
 are also printed to the log when a player joins. There are 3 levels of permissions and 3 options to configure each group:
 
-- `OPS` is used to define operators on the server.  
+- `OPS` is used to define operators on the server.
 ```shell
 -e OPS="1234567890,0987654321"
 ```
@@ -151,7 +151,7 @@ are also printed to the log when a player joins. There are 3 levels of permissio
 
 There are two ways to handle a whitelist:
 
-The first is to set the `ALLOW_LIST` environment variable to true and map in an [allowlist.json](https://minecraft.wiki/w/Whitelist.json) file (previously known as "whitelist.json") that is custom-crafted to the container. 
+The first is to set the `ALLOW_LIST` environment variable to true and map in an [allowlist.json](https://minecraft.wiki/w/Whitelist.json) file (previously known as "whitelist.json") that is custom-crafted to the container.
 
 The other is to set the `ALLOW_LIST_USERS` environment variable to a comma-separated list of gamer tag usernames and their corresponding XUIDs. Each username should be followed by its XUID, separated by a colon. The server will use these details to match the player.
 
@@ -161,23 +161,14 @@ There are various tools to look XUIDs up online and they are also printed to the
 -e ALLOW_LIST_USERS="player1:1234567890,player2:0987654321"
 ```
 
-## Mods Addons 
+## Mods Addons
 
 Also known as behavior or resource packs, in order to add mods into your server you can follow these steps, tested with [OPS (One Player Sleep)](https://foxynotail.com/addons/ops/) and [bedrocktweaks](https://bedrocktweaks.net/resource-packs/)
 
 1. Install the mcpack or mcaddon on the client side first, just to make it easier to copy the files to the server, for Windows 10 files should be located on `C:\Users\USER\AppData\Local\Packages\Microsoft.MinecraftUWP_*\LocalState\games\com.mojang`.
 2. Copy over the folders of the mods from either behavior_packs or resource_packs into the server's volume.
 > If you want to install them without using a client you should be able to unzip the mods directly into the server's volume, .mcaddon should go into behavior_packs and .mcpack into resource_packs. Both .mcaddon and .mcpack are actually renamed .zip files.
-3. On the server's volume we will need to edit `valid_known_packs.json`, you can just copy and paste the definition of another pack and replace path, uuid and version with the mod being installed, uuid and version can be found on the mod behavior or resource _packs/mod/manifest.json, path is the path to the mod's folder.
-```
-	{
-		"file_system" : "RawPath",
-		"path" : "behavior_packs/Foxy'sOneP",
-		"uuid" : "5f51f7b7-85dc-44da-a3ef-a48d8414e4d5",
-		"version" : "3.0.0"
-	}
-```
-4. Lastly create on the server's volume `worlds/$level-name/world_behavior_packs.json`, you'll need to add an entry for each mod like on the previous manifest.json, we only need the uuid now called pack_id and the version replacing dots with commas and double quotes with [ ].
+3. Lastly create on the server's volume `worlds/$level-name/world_behavior_packs.json`, you'll need to add an entry for each mod like on the previous manifest.json, we only need the uuid now called pack_id and the version replacing dots with commas and double quotes with [ ].
 > You can also create a `worlds/$level-name/world_resource_packs.json` but I have seen that putting both resource and behavior packs inside the same json works just fine
 ```
 [
@@ -187,7 +178,7 @@ Also known as behavior or resource packs, in order to add mods into your server 
 	}
 ]
 ```
-5. Restart the server and the mods should be enabled now! when connecting you will get a prompt asking if you want to "Download & Join" or just "Join", You need to Download & Join if you want to actually see the new resource pack added to the server.
+4. Restart the server and the mods should be enabled now! when connecting you will get a prompt asking if you want to "Download & Join" or just "Join", You need to Download & Join if you want to actually see the new resource pack added to the server.
 This prompt is exclusive to resource packs as these alter how minecraft looks while behavior packs alter how minecraft functions and don't need to be downloaded or installed on the client side.
 > If you want to force the resource pack on all clients, there's an option `texturepack-required=false` in `server.properties` that should be changed to `true`.
 > Resource packs can be deleted by going into Settings > Storage > Cached Data, then selecting the pack and clicking on the trash can.
@@ -212,7 +203,7 @@ Alternatively, with stdin and tty enabled (such as using `-it`), attach to the c
 
 ```shell script
 docker attach CONTAINER_NAME_OR_ID
-``` 
+```
 
 While attached, you can execute any server-side commands, such as op'ing your player to be admin:
 
