@@ -284,3 +284,6 @@ kubectl logs -f deployment/bds
 ## Tutorials
 [@TheTinkerDad]([url](https://github.com/TheTinkerDad)) provides an excellent tutorial on how to host multiple instances on a single port (19132) so that it's discoverable: https://www.youtube.com/watch?v=ds0_ESzjbfs
 
+## Contributing
+
+> When trying to build this Docker Image, ensure that all `.sh` files have a end of line sequence of `LF` not `CLRF` or the build will fail.
