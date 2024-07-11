@@ -2,12 +2,6 @@
   "server-name": {
     "env": "SERVER_NAME"
   },
-  "server-port": {
-    "env": "SERVER_PORT"
-  },
-  "server-portv6": {
-    "env": "SERVER_PORT_V6"
-  },
   "gamemode": {
     "env": "GAMEMODE",
     "allowed": ["survival", "creative", "adventure"],
@@ -31,15 +25,6 @@
       "3": "hard"
     }
   },
-  "level-type": {
-    "env": "LEVEL_TYPE",
-    "allowed": ["DEFAULT", "FLAT", "LEGACY"],
-    "mappings": {
-      "flat": "FLAT",
-      "legacy": "LEGACY",
-      "default": "DEFAULT"
-    }
-  },
   "allow-cheats": {
     "env": "ALLOW_CHEATS",
     "allowed": ["true", "false"]
@@ -53,10 +38,21 @@
   },
   "white-list": {
     "env": "WHITE_LIST",
-    "allowed": ["true", "false"]
+    "allowed": ["true", "false"],
+    "deprecated": "This property is deprecated. Use 'allow-list' instead."
   },
   "allow-list": {
     "env": "ALLOW_LIST",
+    "allowed": ["true", "false"]
+  },
+  "server-port": {
+    "env": "SERVER_PORT"
+  },
+  "server-portv6": {
+    "env": "SERVER_PORT_V6"
+  },
+  "enable-lan-visibility": {
+    "env": "ENABLE_LAN_VISIBILITY",
     "allowed": ["true", "false"]
   },
   "view-distance": {
@@ -71,14 +67,20 @@
   "max-threads": {
     "env": "MAX_THREADS"
   },
-  "compression-threshold": {
-    "env": "COMPRESSION_THRESHOLD"
-  },
   "level-name": {
     "env": "LEVEL_NAME"
   },
   "level-seed": {
     "env": "LEVEL_SEED"
+  },
+  "level-type": {
+    "env": "LEVEL_TYPE",
+    "allowed": ["DEFAULT", "FLAT", "LEGACY"],
+    "mappings": {
+      "flat": "FLAT",
+      "legacy": "LEGACY",
+      "default": "DEFAULT"
+    }
   },
   "default-player-permission-level": {
     "env": "DEFAULT_PLAYER_PERMISSION_LEVEL",
@@ -88,6 +90,25 @@
     "env": "TEXTUREPACK_REQUIRED",
     "allowed": ["true", "false"]
   },
+  "content-log-file-enabled": {
+    "env": "CONTENT_LOG_FILE_ENABLED",
+    "allowed": ["true", "false"]
+  },
+  "content-log-level": {
+    "env": "CONTENT_LOG_LEVEL",
+    "allowed": ["verbose", "info", "warning", "error"]
+  },
+  "content-log-console-output-enabled": {
+    "env": "CONTENT_LOG_CONSOLE_OUTPUT_ENABLED",
+    "allowed": ["true", "false"]
+  },
+  "compression-threshold": {
+    "env": "COMPRESSION_THRESHOLD"
+  },
+  "compression-algorithm": {
+    "env": "COMPRESSION_ALGORITHM",
+    "allowed": ["zlib", "snappy"]
+  },
   "server-authoritative-movement": {
     "env": "SERVER_AUTHORITATIVE_MOVEMENT",
     "allowed": ["server-auth", "client-auth", "server-auth-with-rewind"],
@@ -96,12 +117,14 @@
       "false": "client-auth"
     }
   },
-  "server-authoritative-block-breaking": {
-    "env": "SERVER_AUTHORITATIVE_BLOCK_BREAKING",
-    "allowed": ["true", "false"]
+  "player-position-acceptance-threshold": {
+    "env": "PLAYER_POSITION_ACCEPTANCE_THRESHOLD"
   },
   "player-movement-score-threshold": {
     "env": "PLAYER_MOVEMENT_SCORE_THRESHOLD"
+  },
+  "player-movement-action-direction-threshold": {
+    "env": "PLAYER_MOVEMENT_ACTION_DIRECTION_THRESHOLD"
   },
   "player-movement-distance-threshold": {
     "env": "PLAYER_MOVEMENT_DISTANCE_THRESHOLD"
@@ -113,29 +136,12 @@
     "env": "CORRECT_PLAYER_MOVEMENT",
     "allowed": ["true", "false"]
   },
-  "emit-server-telemetry": {
-    "env": "EMIT_SERVER_TELEMETRY",
+  "server-authoritative-block-breaking": {
+    "env": "SERVER_AUTHORITATIVE_BLOCK_BREAKING",
     "allowed": ["true", "false"]
   },
-  "enable-lan-visibility": {
-    "env": "ENABLE_LAN_VISIBILITY",
-    "allowed": ["true", "false"]
-  },
-  "msa-gamertags-only": {
-    "env": "MSA_GAMERTAGS_ONLY",
-    "allowed": ["true", "false"]
-  },
-  "item-transaction-logging-enabled": {
-    "env": "ITEM_TRANSACTION_LOGGING_ENABLED",
-    "allowed": ["true", "false"]
-  },
-  "disable-custom-skins": {
-    "env": "DISABLE_CUSTOM_SKINS",
-    "allowed": ["true", "false"]
-  },
-  "disable-persona": {
-    "env": "DISABLE_PERSONA",
-    "allowed": ["true", "false"]
+  "server-authoritative-block-breaking-pick-range-scalar": {
+    "env": "SERVER_AUTHORITATIVE_BLOCK_BREAKING_PICK_RANGE_SCALAR"
   },
   "chat-restriction": {
     "env": "CHAT_RESTRICTION",
@@ -146,15 +152,91 @@
       "disabled": "Disabled"
     }
   },
-  "op-permission-level": {
-    "env": "OP_PERMISSION_LEVEL"
+  "disable-player-interaction": {
+    "env": "DISABLE_PLAYER_INTERACTION",
+    "allowed": ["true", "false"]
   },
-  "compression-algorithm": {
-    "env": "COMPRESSION_ALGORITHM",
-    "allowed": ["zlib", "snappy"]
+  "client-side-chunk-generation-enabled": {
+    "env": "CLIENT_SIDE_CHUNK_GENERATION_ENABLED",
+    "allowed": ["true", "false"]
   },
   "block-network-ids-are-hashes": {
     "env": "BLOCK_NETWORK_IDS_ARE_HASHES",
+    "allowed": ["true", "false"]
+  },
+  "disable-persona": {
+    "env": "DISABLE_PERSONA",
+    "allowed": ["true", "false"]
+  },
+  "disable-custom-skins": {
+    "env": "DISABLE_CUSTOM_SKINS",
+    "allowed": ["true", "false"]
+  },
+  "server-build-radius-ratio": {
+    "env": "SERVER_BUILD_RADIUS_RATIO"
+  },
+  "allow-outbound-script-debugging": {
+    "env": "ALLOW_OUTBOUND_SCRIPT_DEBUGGING",
+    "allowed": ["true", "false"]
+  },
+  "allow-inbound-script-debugging": {
+    "env": "ALLOW_INBOUND_SCRIPT_DEBUGGING",
+    "allowed": ["true", "false"]
+  },
+  "force-inbound-debug-port": {
+    "env": "FORCE_INBOUND_DEBUG_PORT"
+  },
+  "script-debugger-auto-attach": {
+    "env": "SCRIPT_DEBUGGER_AUTO_ATTACH",
+    "allowed": ["disabled", "connect", "listen"]
+  },
+  "script-debugger-auto-attach-connect-address": {
+    "env": "SCRIPT_DEBUGGER_AUTO_ATTACH_CONNECT_ADDRESS"
+  },
+  "script-watchdog-enable": {
+    "env": "SCRIPT_WATCHDOG_ENABLE",
+    "allowed": ["true", "false"]
+  },
+  "script-watchdog-enable-exception-handling": {
+    "env": "SCRIPT_WATCHDOG_ENABLE_EXCEPTION_HANDLING",
+    "allowed": ["true", "false"]
+  },
+  "script-watchdog-enable-shutdown": {
+    "env": "SCRIPT_WATCHDOG_ENABLE_SHUTDOWN",
+    "allowed": ["true", "false"]
+  },
+  "script-watchdog-hang-exception": {
+    "env": "SCRIPT_WATCHDOG_HANG_EXCEPTION",
+    "allowed": ["true", "false"]
+  },
+  "script-watchdog-hang-threshold": {
+    "env": "SCRIPT_WATCHDOG_HANG_THRESHOLD"
+  },
+  "script-watchdog-spike-threshold": {
+    "env": "SCRIPT_WATCHDOG_SPIKE_THRESHOLD"
+  },
+  "script-watchdog-slow-threshold": {
+    "env": "SCRIPT_WATCHDOG_SLOW_THRESHOLD"
+  },
+  "script-watchdog-memory-warning": {
+    "env": "SCRIPT_WATCHDOG_MEMORY_WARNING"
+  },
+  "script-watchdog-memory-limit": {
+    "env": "SCRIPT_WATCHDOG_MEMORY_LIMIT"
+  },
+  "op-permission-level": {
+    "env": "OP_PERMISSION_LEVEL"
+  },
+  "emit-server-telemetry": {
+    "env": "EMIT_SERVER_TELEMETRY",
+    "allowed": ["true", "false"]
+  },
+  "msa-gamertags-only": {
+    "env": "MSA_GAMERTAGS_ONLY",
+    "allowed": ["true", "false"]
+  },
+  "item-transaction-logging-enabled": {
+    "env": "ITEM_TRANSACTION_LOGGING_ENABLED",
     "allowed": ["true", "false"]
   }
 }
