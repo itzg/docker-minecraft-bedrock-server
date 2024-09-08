@@ -128,10 +128,10 @@ if [[ ! -f "bedrock_server-${VERSION}" ]]; then
       mkdir -p "${bkupDir}/$d"
       echo "Backing up $d into $bkupDir"
       if [[ "$d" == "resource_packs" ]]; then
-        mv $d/{chemistry,vanilla} "${bkupDir}/"
-        [[ -n "$(ls $d)" ]] && cp -a $d/* "${bkupDir}/"
+        mv $d/{chemistry,vanilla} "${bkupDir}/$d/"
+        cp -a $d/ "${bkupDir}/$d/"
       else
-        mv $d/* "${bkupDir}/"
+        mv $d "${bkupDir}/"
       fi
     fi
   done
