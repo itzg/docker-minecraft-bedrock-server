@@ -22,11 +22,11 @@ ENTRYPOINT ["/usr/local/bin/entrypoint-demoter", "--match", "/data", "--debug", 
 ARG APPS_REV=1
 ARG GITHUB_BASEURL=https://github.com
 
-ARG EASY_ADD_VERSION=0.8.7
+ARG EASY_ADD_VERSION=0.8.8
 ADD ${GITHUB_BASEURL}/itzg/easy-add/releases/download/${EASY_ADD_VERSION}/easy-add_${TARGETOS}_${TARGETARCH}${TARGETVARIANT} /usr/bin/easy-add
 RUN chmod +x /usr/bin/easy-add
 
-ARG ENTRYPOINT_DEMOTER_VERSION=0.4.4
+ARG ENTRYPOINT_DEMOTER_VERSION=0.4.5
 RUN easy-add --var version=${ENTRYPOINT_DEMOTER_VERSION} --var app=entrypoint-demoter --file {{.app}} --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/v{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
 
 ARG SET_PROPERTY_VERSION=0.1.2
@@ -37,7 +37,7 @@ RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --var version=${RESTIFY_VERSION} --var app=restify --file {{.app}} \
   --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
 
-ARG MC_MONITOR_VERSION=0.12.12
+ARG MC_MONITOR_VERSION=0.14.1
 RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --var version=${MC_MONITOR_VERSION} --var app=mc-monitor --file {{.app}} \
   --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
