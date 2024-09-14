@@ -120,8 +120,8 @@ docker run -d -it --name bds-flat-creative \
 
 ## Exposed Ports
 
-- **UDP** 19132 : the Bedrock server port.
-  **NOTE** that you must append `/udp` when exposing the port, such as `-p 19132:19132/udp`
+- **UDP** 19132 : the Bedrock server port on IPv4 set by `SERVER_PORT`. The IPv6 port is not exposed by default.
+  **NOTE** that you must append `/udp` when exposing the port, such as `-p 19132:19132/udp` and both IPv4 and IPv6 must be enabled on your host machine.
 
 ## Volumes
 
