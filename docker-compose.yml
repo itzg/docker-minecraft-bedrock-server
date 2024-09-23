@@ -1,0 +1,22 @@
+services:
+  minecraft:
+    image: minecraft
+    container_name: minecraft
+    environment:
+      EULA: TRUE
+      GAMEMODE: survival
+      DIFFICULTY: easy
+      VERSION: LATEST
+      ONLINE_MODE: false
+    ports:
+      - "19132:19132/udp"
+    restart: always
+    volumes:
+      - minecraft-data:/data
+    stdin_open: true
+    tty: true
+    cap_add:
+      - SYS_PTRACE
+
+volumes:
+  minecraft-data:
