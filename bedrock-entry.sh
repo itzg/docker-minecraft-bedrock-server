@@ -10,8 +10,20 @@ function isTrue() {
   return 1
 }
 
+function replace_version_in_url() {
+  local original_url="$1"
+  local new_version="$2"
+
+  # Use sed to replace the version number in the URL
+  local modified_url
+  modified_url=$(echo "$original_url" | sed -E "s/(bedrock-server-)[^/]+(\.zip)/\1${new_version}\2/")
+
+  echo "$modified_url"
+}
+
 function lookupVersion() {
   platform=${1:?Missing required platform indicator}
+  customVersion=${2:-}
 
   # shellcheck disable=SC2034
   for i in {1..3}; do
@@ -21,6 +33,11 @@ function lookupVersion() {
   done
   if [[ -z ${DOWNLOAD_URL} ]]; then
     DOWNLOAD_URL=$(curl -s https://mc-bds-helper.vercel.app/api/latest)
+  fi
+
+  if [[ -n "${customVersion}" && -n "${DOWNLOAD_URL}" ]]; then
+    DOWNLOAD_URL=$(replace_version_in_url "${DOWNLOAD_URL}" "${customVersion}")
+    return
   fi
 
   # shellcheck disable=SC2012
@@ -65,27 +82,6 @@ if [[ ${EULA^^} != TRUE ]]; then
 fi
 
 case ${VERSION^^} in
-  1.12)
-    VERSION=1.12.0.28
-    ;;
-  1.13)
-    VERSION=1.13.0.34
-    ;;
-  1.14)
-    VERSION=1.14.60.5
-    ;;
-  1.16)
-    VERSION=1.16.20.03
-    ;;
-  1.17)
-    VERSION=1.17.41.01
-    ;;
-  1.17.41)
-    VERSION=1.17.41.01
-    ;;
-  1.18|PREVIOUS)
-    VERSION=1.18.33.02
-    ;;
   PREVIEW)
     echo "Looking up latest preview version..."
     lookupVersion serverBedrockPreviewLinux
@@ -96,16 +92,12 @@ case ${VERSION^^} in
     ;;
   *)
     # use the given version exactly
+    echo "Using given version ${VERSION}"
+    lookupVersion serverBedrockLinux "${VERSION}"
     ;;
 esac
 
 if [[ ! -f "bedrock_server-${VERSION}" ]]; then
-
-  if [[ -z "${DOWNLOAD_URL}" ]]; then
-    binPath=bin-linux
-    isTrue "${PREVIEW}" && binPath+="-preview"
-    DOWNLOAD_URL="https://minecraft.azureedge.net/${binPath}/bedrock-server-${VERSION}.zip"
-  fi
 
   [[ $TMP_DIR != /tmp ]] && mkdir -p "$TMP_DIR"
   TMP_ZIP="$TMP_DIR/$(basename "${DOWNLOAD_URL}")"
