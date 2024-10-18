@@ -179,6 +179,34 @@ if [[ -n "$ALLOW_LIST_USERS" || -n "$WHITE_LIST_USERS" ]]; then
   fi
 fi
 
+if [[ -n "$VARIABLES" ]]; then
+  echo "Setting variables"
+  mkdir -p config/default
+
+  # Try to parse VARIABLES as JSON
+  if echo "$VARIABLES" | jq empty >/dev/null 2>&1; then
+    # VARIABLES is valid JSON
+    echo "$VARIABLES" | jq '.' > "config/default/variables.json"
+  else
+    # VARIABLES is not valid JSON, attempt to parse as custom format
+    echo "VARIABLES is not valid JSON, attempting to parse as custom format"
+
+    # Parse the VARIABLES using custom format (key:value,key:value)
+    # Note: Values should not contain unescaped commas or colons
+    jq -n --arg vars "$VARIABLES" '
+      $vars
+      | split(",")
+      | map(
+          split(":") as $kv |
+          { ($kv[0]): ($kv[1] | fromjson? // $kv[1]) }
+        )
+      | add
+    ' > "config/default/variables.json"
+  fi
+fi
+
+
+
 # prevent issue with bind mounted server.properties which can not be moved (sed tries to move the file when '-i' is used)
 _SERVER_PROPERTIES=$(sed '/^white-list=.*/d' server.properties) #Removes white-list= line from server.properties
 echo "${_SERVER_PROPERTIES}" > server.properties
