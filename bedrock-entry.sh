@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-: "${TMP_DIR:=/tmp}"
+: "${DOWNLOAD_DIR:=${PWD}/.downloads}"
 : "${PREVIEW:=false}"
 
 function isTrue() {
@@ -67,7 +67,7 @@ if [[ ${DEBUG^^} == TRUE ]]; then
   echo "       current directory is $(pwd)"
 fi
 
-export HOME=/data
+export HOME="${PWD}"
 
 downloadPage=https://www.minecraft.net/en-us/download/server/bedrock
 
@@ -104,8 +104,8 @@ esac
 
 if [[ ! -f "bedrock_server-${VERSION}" ]]; then
 
-  [[ $TMP_DIR != /tmp ]] && mkdir -p "$TMP_DIR"
-  TMP_ZIP="$TMP_DIR/$(basename "${DOWNLOAD_URL}")"
+  [[ $DOWNLOAD_DIR != /tmp ]] && mkdir -p "$DOWNLOAD_DIR"
+  TMP_ZIP="$DOWNLOAD_DIR/$(basename "${DOWNLOAD_URL}")"
 
   echo "Downloading Bedrock server version ${VERSION} ..."
   if ! curl "${curlArgs[@]}" -o "${TMP_ZIP}" -A "itzg/minecraft-bedrock-server" -fsSL "${DOWNLOAD_URL}"; then
@@ -146,7 +146,7 @@ if [[ ! -f "bedrock_server-${VERSION}" ]]; then
   # Do not overwrite existing files, which means the cleanup above needs to account for things
   # that MUST be replaced on upgrade
   unzip -q -n "${TMP_ZIP}"
-  [[ $TMP_DIR != /tmp ]] && rm -rf "$TMP_DIR"
+  [[ $DOWNLOAD_DIR != /tmp ]] && rm -rf "$DOWNLOAD_DIR"
 
   chmod +x bedrock_server
   mv bedrock_server "bedrock_server-${VERSION}"
