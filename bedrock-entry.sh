@@ -197,7 +197,7 @@ if [[ -n "$VARIABLES" ]]; then
       $vars
       | split(",")
       | map(
-          split(":") as $kv |
+          split("=") as $kv |
           { ($kv[0]): ($kv[1] | fromjson? // $kv[1]) }
         )
       | add
