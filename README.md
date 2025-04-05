@@ -109,6 +109,7 @@ Typically, each property is configured instead by the UPPER_SNAKE_CASE equivalen
 - `EMIT_SERVER_TELEMETRY`
 - `MSA_GAMERTAGS_ONLY`
 - `ITEM_TRANSACTION_LOGGING_ENABLED`
+- `VARIABLES`
 
 For example, to configure a flat, creative server instead of the default use:
 
@@ -189,6 +190,29 @@ There are various tools to look XUIDs up online and they are also printed to the
 
 ```shell
 -e ALLOW_LIST_USERS="player1:1234567890,player2:0987654321"
+```
+
+## Variables
+
+Custom server variables are supported by Bedrock. Details and usage instructions can be found on the official bedrock documentation, located here:
+
+- [Variables & Secrets - Minecraft Creator Docs](https://learn.microsoft.com/en-us/minecraft/creator/documents/scriptingservers?view=minecraft-bedrock-stable#variables-and-secrets)
+- [Variables & Secrets - minecraft/server-admin example](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server-admin/serversecrets?view=minecraft-bedrock-experimental#getplayerprofilets-1)
+
+Custom server variables are passed in as comma-separated simple key-value pairs or as a full JSON string.
+
+Server variables are parsed into their most likely type (number-like turn into numbers, all other inputs are treated as string) using [jq's `fromjson` command](https://jqlang.github.io/jq/manual/#convert-to-from-json). In the example below, `var1` is a string, `var2` is a number, and `var3` is a string. 
+
+For greater control on types, users can provide a full string JSON representation that is used as-is.
+
+All variables are written to the variables file located at `config/default/variables.json`. There is no support for Module-specific variable handling at this time.
+
+```shell
+# passing in simple expressions
+-e VARIABLES="var1=customStringValue,var2=1234,var3=true"
+
+# pass in a full json object:
+-e VARIABLES='{"mobSpawnRate":22,"enableCheats":true,"worldArray":["My World", "Abc", 123]}'
 ```
 
 ## Mods Addons
