@@ -29,7 +29,7 @@ RUN chmod +x /usr/bin/easy-add
 ARG ENTRYPOINT_DEMOTER_VERSION=0.4.7
 RUN easy-add --var version=${ENTRYPOINT_DEMOTER_VERSION} --var app=entrypoint-demoter --file {{.app}} --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/v{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
 
-ARG SET_PROPERTY_VERSION=0.1.4x
+ARG SET_PROPERTY_VERSION=0.1.4
 RUN easy-add --var version=${SET_PROPERTY_VERSION} --var app=set-property --file {{.app}} --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
 
 ARG RESTIFY_VERSION=1.7.8
