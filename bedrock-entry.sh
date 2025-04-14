@@ -125,8 +125,16 @@ if [[ ! -f "bedrock_server-${VERSION}" ]]; then
       mkdir -p "${bkupDir}/$d"
       echo "Backing up $d into $bkupDir"
       if [[ "$d" == "resource_packs" ]]; then
-        mv $d/{chemistry,vanilla} "${bkupDir}/$d/"
-        cp -a $d/ "${bkupDir}/$d/"
+        # Copy over resource packs to ensure user-supplied ones remain
+        cp -a $d/* "${bkupDir}/$d/"
+
+        # ...however, need to fully remove Mojang provided resource packs to ensure consistent content
+        for rp_dir in chemistry vanilla editor; do
+          if [[ -d "$d/$rp_dir" ]]; then
+            # shellcheck disable=SC2115
+            rm -rf "$d/$rp_dir"
+          fi
+        done
       else
         mv $d "${bkupDir}/"
       fi
