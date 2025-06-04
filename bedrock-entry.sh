@@ -135,6 +135,9 @@ if [[ ! -f "bedrock_server-${VERSION}" ]]; then
             rm -rf "$d/$rp_dir"
           fi
         done
+      elif [[ "$d" == "behavior_packs" ]]; then
+        # remove Mojang provided ones
+        find behavior_packs \( -name 'vanilla*' -o -name 'chemistry*' -o -name 'experimental*' \) -exec rm -rf {} +
       else
         mv $d "${bkupDir}/"
       fi
