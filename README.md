@@ -43,6 +43,8 @@ For Minecraft Java Edition you'll need to use this image instead:
   bedrock server process
 - `TZ` (no default): can be set to a specific timezone like `America/New_York`. This will set the timezone for the Docker container and therefore their logs. Addtionally, if you want to sync the time with the host, you can mount the `/etc/localtime` file from the host to the container like `/etc/localtime:/etc/localtime:ro`.
 - `PACKAGE_BACKUP_KEEP` (`2`) : how many package backups to keep
+- `DIRECT_DOWNLOAD_URL` (no default): This environment variable can be used to provide a **direct download URL** for the Minecraft Bedrock server `.zip` file. When set, this URL will be used instead of attempting to automatically look up the download link from `minecraft.net`. This is particularly useful for CI/CD environments or when the automatic version lookup is temporarily broken due to website changes. Ensure the URL points directly to the `bedrock-server-VERSION.zip` file.
+
 
 ### Server Properties
 
