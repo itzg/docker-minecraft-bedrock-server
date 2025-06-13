@@ -23,22 +23,30 @@ function replace_version_in_url() {
 
 function lookupVersion() {
   platform=${1:?Missing required platform indicator}
-  customVersion=${2:-}
+  # TODO need to find out API call to lookup custom version
+  # customVersion=${2:-}
 
-  # shellcheck disable=SC2034
-  for i in {1..3}; do
-    DOWNLOAD_URL=$(restify --user-agent=itzg/minecraft-bedrock-server --headers "accept-language:*" --attribute=data-platform="${platform}" "${downloadPage}" 2> restify.err | jq -r '.[0].href' || echo '')
-    [[ -n "${DOWNLOAD_URL}" ]] && break
-    sleep 1
-  done
-  if [[ -z ${DOWNLOAD_URL} ]]; then
-    DOWNLOAD_URL=$(curl -s https://mc-bds-helper.vercel.app/api/latest)
-  fi
-
-  if [[ -n "${customVersion}" && -n "${DOWNLOAD_URL}" ]]; then
-    DOWNLOAD_URL=$(replace_version_in_url "${DOWNLOAD_URL}" "${customVersion}")
-    return
-  fi
+  DOWNLOAD_URL=$(
+    curl -fsSL "${getUrlPage}" |
+      jq --arg platform serverBedrockLinux -rR '
+        try(fromjson) catch({}) |
+        .result.links // halt_error(1) |
+          map(
+            select(.downloadType == $platform)
+          ) |
+          if length > 0 then
+            first |
+            .downloadUrl
+          else
+            (
+              "Error: could not find platform (\($platform))\n" |
+              stderr |
+              "" |
+              halt_error(2)
+            )
+          end
+        '
+  )
 
   # shellcheck disable=SC2012
   if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
@@ -46,18 +54,10 @@ function lookupVersion() {
   elif [[ $(ls -rv bedrock_server-* 2> /dev/null|head -1) =~ bedrock_server-(.*) ]]; then
     VERSION=${BASH_REMATCH[1]}
     echo "WARN Minecraft download page failed, so using existing download of $VERSION"
-    cat restify.err
   else
-    if [[ -f restify.err ]]; then
-      echo "Failed to extract download URL '${DOWNLOAD_URL}' from ${downloadPage}"
-      cat restify.err
-      rm restify.err
-    else
-      echo "Failed to lookup download URL: ${DOWNLOAD_URL}"
-    fi
+    echo "Failed to lookup download URL: ${DOWNLOAD_URL}"
     exit 2
   fi
-  rm -f restify.err
 }
 
 if [[ ${DEBUG^^} == TRUE ]]; then
@@ -69,7 +69,8 @@ fi
 
 export HOME="${PWD}"
 
-downloadPage=https://www.minecraft.net/en-us/download/server/bedrock
+# Looks like both net and net-secondary hostnames work
+getUrlPage=https://net-secondary.web.minecraft-services.net/api/v1.0/download/links
 
 if [[ ${EULA^^} != TRUE ]]; then
   echo
