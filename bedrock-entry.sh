@@ -81,26 +81,44 @@ if [[ ${EULA^^} != TRUE ]]; then
   exit 1
 fi
 
-case ${VERSION^^} in
-  PREVIEW)
-    echo "Looking up latest preview version..."
-    lookupVersion serverBedrockPreviewLinux
-    ;;
-  LATEST)
-    echo "Looking up latest version..."
-    lookupVersion serverBedrockLinux
-    ;;
-  *)
-    # use the given version exactly
-    if isTrue "$PREVIEW"; then
-      echo "Using given preview version ${VERSION}"
-      lookupVersion serverBedrockPreviewLinux "${VERSION}"
+# Check for DIRECT_DOWNLOAD_URL override first
+if [[ -n "${DIRECT_DOWNLOAD_URL}" ]]; then
+  echo "Using direct download URL from DIRECT_DOWNLOAD_URL environment variable."
+  DOWNLOAD_URL="${DIRECT_DOWNLOAD_URL}"
+  # If VERSION is not explicitly set, try to extract it from the URL
+  if [[ -z "${VERSION}" ]]; then
+    if [[ "${DOWNLOAD_URL}" =~ bedrock-server-([0-9\.]+)\.zip ]]; then
+      VERSION=${BASH_REMATCH[1]}
+      echo "Extracted VERSION=${VERSION} from DIRECT_DOWNLOAD_URL."
     else
-      echo "Using given version ${VERSION}"
-      lookupVersion serverBedrockLinux "${VERSION}"
+      echo "WARNING: Could not extract VERSION from DIRECT_DOWNLOAD_URL. Please ensure VERSION environment variable is set."
+      # Optionally exit here if VERSION is strictly required, but for testing, often the test will fail later.
     fi
-    ;;
-esac
+  else
+    echo "VERSION=${VERSION} is explicitly set, using it with DIRECT_DOWNLOAD_URL."
+  fi
+else # Original logic: if DIRECT_DOWNLOAD_URL is NOT set, proceed with lookup
+  case ${VERSION^^} in
+    PREVIEW)
+      echo "Looking up latest preview version..."
+      lookupVersion serverBedrockPreviewLinux
+      ;;
+    LATEST)
+      echo "Looking up latest version..."
+      lookupVersion serverBedrockLinux
+      ;;
+    *)
+      # use the given version exactly
+      if isTrue "$PREVIEW"; then
+        echo "Using given preview version ${VERSION}"
+        lookupVersion serverBedrockPreviewLinux "${VERSION}"
+      else
+        echo "Using given version ${VERSION}"
+        lookupVersion serverBedrockLinux "${VERSION}"
+      fi
+      ;;
+  esac
+fi
 
 if [[ ! -f "bedrock_server-${VERSION}" ]]; then
 
