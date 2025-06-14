@@ -28,7 +28,7 @@ function lookupVersion() {
 
   DOWNLOAD_URL=$(
     curl -fsSL "${getUrlPage}" |
-      jq --arg platform serverBedrockLinux -rR '
+      jq --arg platform "$platform" -rR '
         try(fromjson) catch({}) |
         .result.links // halt_error(1) |
           map(
