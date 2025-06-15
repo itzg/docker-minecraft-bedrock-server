@@ -23,8 +23,7 @@ function replace_version_in_url() {
 
 function lookupVersion() {
   platform=${1:?Missing required platform indicator}
-  # TODO need to find out API call to lookup custom version
-  # customVersion=${2:-}
+  customVersion=${2:-}
 
   DOWNLOAD_URL=$(
     curl -fsSL "${getUrlPage}" |
@@ -47,6 +46,11 @@ function lookupVersion() {
           end
         '
   )
+
+  if [[ -n "${customVersion}" && -n "${DOWNLOAD_URL}" ]]; then
+    DOWNLOAD_URL=$(replace_version_in_url "${DOWNLOAD_URL}" "${customVersion}")
+    return
+  fi
 
   # shellcheck disable=SC2012
   if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
