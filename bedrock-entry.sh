@@ -4,6 +4,8 @@ set -eo pipefail
 
 : "${DOWNLOAD_DIR:=${PWD}/.downloads}"
 : "${PREVIEW:=false}"
+# Both net and net-secondary hostnames work
+: "${DOWNLOAD_LINKS_URL:=https://net-secondary.web.minecraft-services.net/api/v1.0/download/links}"
 
 function isTrue() {
   [[ "${1,,}" =~ ^(true|on|1)$ ]] && return 0
@@ -25,8 +27,8 @@ function lookupVersion() {
   platform=${1:?Missing required platform indicator}
   customVersion=${2:-}
 
-  DOWNLOAD_URL=$(
-    curl -fsSL "${getUrlPage}" |
+  if ! DOWNLOAD_URL=$(
+    curl -fsSL "${DOWNLOAD_LINKS_URL}" |
       jq --arg platform "$platform" -rR '
         try(fromjson) catch({}) |
         .result.links // halt_error(1) |
@@ -45,7 +47,24 @@ function lookupVersion() {
             )
           end
         '
-  )
+  ); then
+    case "$platform" in
+    serverBedrockLinux)
+      type=latest
+      ;;
+    serverBedrockPreviewLinux)
+      type=preview
+      ;;
+    *)
+      echo "ERROR invalid platform $platform"
+      exit 2
+    esac
+
+    if ! DOWNLOAD_URL=$(curl -fsSL "https://mc-bds-helper.vercel.app/api/$type"); then
+      echo "ERROR failed to lookup Bedrock version and download URL"
+      exit 1
+    fi
+  fi
 
   if [[ -n "${customVersion}" && -n "${DOWNLOAD_URL}" ]]; then
     DOWNLOAD_URL=$(replace_version_in_url "${DOWNLOAD_URL}" "${customVersion}")
@@ -72,9 +91,6 @@ if [[ ${DEBUG^^} == TRUE ]]; then
 fi
 
 export HOME="${PWD}"
-
-# Looks like both net and net-secondary hostnames work
-getUrlPage=https://net-secondary.web.minecraft-services.net/api/v1.0/download/links
 
 if [[ ${EULA^^} != TRUE ]]; then
   echo
