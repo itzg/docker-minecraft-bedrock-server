@@ -164,8 +164,9 @@ in the "LAN Games" part of the "Friends" tab, such as:
 
 ## Permissions
 
-The Bedrock Dedicated Server requires permissions be defined with XUIDs. There are various tools to look these up online and they
-are also printed to the log when a player joins. There are 3 levels of permissions and 3 options to configure each group:
+The Bedrock Dedicated Server requires permissions be defined with XUIDs. There are various tools to look these up online, such as [MCProfile](https://mcprofile.io/). A player's XUID is also printed to the log when a player joins.
+
+There are 3 levels of permissions and 3 options to configure each group:
 
 - `OPS` is used to define operators on the server.
 ```shell
