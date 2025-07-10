@@ -21,6 +21,8 @@ With the `VERSION` variable set to "LATEST", which is the default, then the Bedr
 
 The latest preview version can be requested by setting `VERSION` to "PREVIEW".
 
+**NOTE** the Bedrock server software is not bundled into this image. Instead, it is downloaded/upgraded from Mojang only during container startup. As such, releases of this image are independent of releases of Mojang's software. 
+
 ## Looking for a Java Edition Server
 
 For Minecraft Java Edition you'll need to use this image instead:
