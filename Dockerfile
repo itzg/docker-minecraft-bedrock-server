@@ -53,6 +53,6 @@ COPY bin/* /usr/local/bin/
 # https://minecraft.wiki/w/Bedrock_Edition_1.13.0
 # https://minecraft.wiki/w/Bedrock_Edition_1.14.0
 ENV VERSION=LATEST \
-    SERVER_PORT=19132
+    SERVER_PORT=3611
 
 HEALTHCHECK --start-period=1m CMD /usr/local/bin/mc-monitor status-bedrock --host 127.0.0.1 --port $SERVER_PORT
