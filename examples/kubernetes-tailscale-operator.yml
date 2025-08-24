@@ -115,4 +115,3 @@ spec:
   ports:
     - port: 19132
       protocol: UDP
-  ipFamily: IPv4
