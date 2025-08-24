@@ -1,0 +1,117 @@
+# This example manifest deploys a Minecraft Bedrock server on Kubernetes
+# using Tailscale Operator to provide secure access to the server.
+# 
+# Prerequisites: A Kubernetes cluster with Tailscale Operator installed and configured.
+# Please see https://tailscale.com/kb/1236/kubernetes-operator
+#
+# Also, This example contains an initContainer to adjust the MTU of the pod's network interface.
+# Please see https://github.com/itzg/docker-minecraft-bedrock-server/discussions/553
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minecraft-bedrock
+  labels:
+    role: service-config
+    app: bds
+data:
+  EULA: "TRUE"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: bds
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: bds
+  name: bds
+spec:
+  replicas: 1
+  serviceName: bds
+  selector:
+    matchLabels:
+      app: bds
+  template:
+    metadata:
+      labels:
+        app: bds
+    spec:
+      initContainers:
+        - name: setup-mtu
+          image: busybox:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              ip route
+              ip route change default via $POD_IP dev $TARGET_DEVICE mtu $TARGET_MTU
+              ip route
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: TARGET_MTU
+              value: "1280" # tailscale's default MTU. see https://tailscale.com/kb/1023/troubleshooting#tcp-connection-issues-between-two-devices
+            - name: TARGET_DEVICE 
+              value: eth0 # adjust if not eth0
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN # it is necessary to change the MTU
+
+      containers:
+        - name: main
+          image: itzg/minecraft-bedrock-server
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: minecraft-bedrock
+          volumeMounts:
+            - mountPath: /data
+              name: data
+          ports:
+            - containerPort: 19132
+              protocol: UDP
+          readinessProbe: &probe
+            exec:
+              command:
+                - mc-monitor
+                - status-bedrock
+                - --host
+                - 127.0.0.1
+            initialDelaySeconds: 30
+          livenessProbe: *probe
+          tty: true
+          stdin: true
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bds
+  annotations:
+    tailscale.com/expose: "true" # expose this service via Tailscale
+spec:
+  selector:
+    app: bds
+  ports:
+    - port: 19132
+      protocol: UDP
