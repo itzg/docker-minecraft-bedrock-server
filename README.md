@@ -38,6 +38,7 @@ For Minecraft Java Edition you'll need to use this image instead:
 - `VERSION` (default is `LATEST`) : can be set to a specific server version or the following special values can be used:
   - `LATEST` : determines the latest (non-preview) version and can be used to auto-upgrade on container start
   - `PREVIEW` : determines the latest preview version and will auto-upgrade
+  - `EXISTING`: use existing bedrock server executable in `/data`. Must be named either `bedrock_server-{version}` or just `bedrock_server`
   - otherwise any specific server version can be provided. If it is a preview version, also set `PREVIEW` to "true"
 - `UID` (default derived from `/data` owner) : can be set to a specific user ID to run the
   bedrock server process
