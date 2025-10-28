@@ -23,6 +23,20 @@ function replace_version_in_url() {
   echo "$modified_url"
 }
 
+function versionFromExisting() {
+  # shellcheck disable=SC2012
+  # since find doesn't support sort by version numbers, -v
+  if [[ $(ls -rv bedrock_server-* 2> /dev/null|head -1) =~ bedrock_server-(.*) ]]; then
+    VERSION=${BASH_REMATCH[1]}
+    return 0
+  elif ls bedrock_server 2> /dev/null; then
+    VERSION=none
+    return 0
+  else
+    return 1
+  fi
+}
+
 function lookupVersion() {
   platform=${1:?Missing required platform indicator}
   customVersion=${2:-}
@@ -74,8 +88,7 @@ function lookupVersion() {
   # shellcheck disable=SC2012
   if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
     VERSION=${BASH_REMATCH[1]}
-  elif [[ $(ls -rv bedrock_server-* 2> /dev/null|head -1) =~ bedrock_server-(.*) ]]; then
-    VERSION=${BASH_REMATCH[1]}
+  elif versionFromExisting; then
     echo "WARN Minecraft download page failed, so using existing download of $VERSION"
   else
     echo "Failed to lookup download URL: ${DOWNLOAD_URL}"
@@ -128,6 +141,14 @@ else # Original logic: if DIRECT_DOWNLOAD_URL is NOT set, proceed with lookup
       echo "Looking up latest version..."
       lookupVersion serverBedrockLinux
       ;;
+    EXISTING)
+      if versionFromExisting; then
+        echo "Using existing bedrock server executable"
+      else
+        echo "ERROR unable to locate existing bedrock server executable"
+        exit 1
+      fi
+      ;;
     *)
       # use the given version exactly
       if isTrue "$PREVIEW"; then
@@ -141,7 +162,13 @@ else # Original logic: if DIRECT_DOWNLOAD_URL is NOT set, proceed with lookup
   esac
 fi
 
-if [[ ! -f "bedrock_server-${VERSION}" ]]; then
+if [[ $VERSION = none ]]; then
+  SERVER=bedrock_server
+else
+  SERVER="bedrock_server-${VERSION}"
+fi
+
+if [[ ! -f "$SERVER" ]]; then
 
   [[ $DOWNLOAD_DIR != /tmp ]] && mkdir -p "$DOWNLOAD_DIR"
   TMP_ZIP="$DOWNLOAD_DIR/$(basename "${DOWNLOAD_URL}")"
@@ -199,7 +226,7 @@ if [[ ! -f "bedrock_server-${VERSION}" ]]; then
   [[ $DOWNLOAD_DIR != /tmp ]] && rm -rf "$DOWNLOAD_DIR"
 
   chmod +x bedrock_server
-  mv bedrock_server "bedrock_server-${VERSION}"
+  mv bedrock_server "$SERVER"
 fi
 
 if [[ -n "$OPS" || -n "$MEMBERS" || -n "$VISITORS" ]]; then
@@ -283,7 +310,7 @@ fi
 
 echo "Starting Bedrock server..."
 if [[ -f /usr/local/bin/box64 ]] ; then
-    exec mc-server-runner "${mcServerRunnerArgs[@]}" box64 ./"bedrock_server-${VERSION}"
+    exec mc-server-runner "${mcServerRunnerArgs[@]}" box64 ./"$SERVER"
 else
-    exec mc-server-runner "${mcServerRunnerArgs[@]}" ./"bedrock_server-${VERSION}"
+    exec mc-server-runner "${mcServerRunnerArgs[@]}" ./"$SERVER"
 fi
