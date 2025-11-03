@@ -56,3 +56,12 @@ ENV VERSION=LATEST \
     SERVER_PORT=19132
 
 HEALTHCHECK --start-period=1m CMD /usr/local/bin/mc-monitor status-bedrock --host 127.0.0.1 --port $SERVER_PORT
+
+ARG BUILDTIME=local
+ARG VERSION=local
+ARG REVISION=local
+COPY <<EOF /etc/image.properties
+buildtime=${BUILDTIME}
+version=${VERSION}
+revision=${REVISION}
+EOF
