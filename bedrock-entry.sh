@@ -6,6 +6,7 @@ set -eo pipefail
 : "${PREVIEW:=false}"
 # Both net and net-secondary hostnames work
 : "${DOWNLOAD_LINKS_URL:=https://net-secondary.web.minecraft-services.net/api/v1.0/download/links}"
+: "${USE_BOX64:=true}"
 
 function isTrue() {
   [[ "${1,,}" =~ ^(true|on|1)$ ]] && return 0
@@ -95,6 +96,8 @@ function lookupVersion() {
     exit 2
   fi
 }
+
+echo "Image info: $(paste -d, -s /etc/image.properties)"
 
 if [[ ${DEBUG^^} == TRUE ]]; then
   set -x
@@ -309,7 +312,7 @@ if isTrue "${ENABLE_SSH}"; then
 fi
 
 echo "Starting Bedrock server..."
-if [[ -f /usr/local/bin/box64 ]] ; then
+if [[ -f /usr/local/bin/box64 ]] && isTrue "${USE_BOX64}" ; then
     exec mc-server-runner "${mcServerRunnerArgs[@]}" box64 ./"$SERVER"
 else
     exec mc-server-runner "${mcServerRunnerArgs[@]}" ./"$SERVER"
