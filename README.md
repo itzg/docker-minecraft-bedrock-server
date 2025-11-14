@@ -342,6 +342,7 @@ kubectl logs -f deployment/bds
 - [ghcr.io/edward3h/mc-webhook](https://github.com/edward3h/minecraft-webhook) by @edward3h
 - [Minecraft Bedrock Server Bridge](https://github.com/macchie/minecraft-bedrock-server-bridge) by @macchie
 - [Admincraft](https://github.com/joanroig/Admincraft) by @joanroig
+- [Bedrock Server Manager Using itzg docker image](https://github.com/mugh/minecraft-bedrock-server-manager) by @mugh
 
 ## Tutorials
 [@TheTinkerDad]([url](https://github.com/TheTinkerDad)) provides an excellent tutorial on how to host multiple instances on a single port (19132) so that it's discoverable: https://www.youtube.com/watch?v=ds0_ESzjbfs
