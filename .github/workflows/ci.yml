@@ -23,6 +23,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     if: github.repository == 'itzg/docker-minecraft-bedrock-server'
+    env:
+      IMAGE_BASE_NAME: minecraft-bedrock-server
 
     steps:
       - name: Set up QEMU
@@ -38,11 +40,21 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
       - name: Docker Metadata action
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: itzg/minecraft-bedrock-server
+          images: |
+            ${{ github.repository_owner }}/${{ env.IMAGE_BASE_NAME }}
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_BASE_NAME }}
           flavor: |
             latest=${{ github.event_name == 'push' && github.ref_name == 'master' }}
 
