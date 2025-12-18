@@ -286,10 +286,11 @@ if [[ -n "$VARIABLES" ]]; then
 fi
 
 
-
-# prevent issue with bind mounted server.properties which can not be moved (sed tries to move the file when '-i' is used)
-_SERVER_PROPERTIES=$(sed '/^white-list=.*/d' server.properties) #Removes white-list= line from server.properties
-echo "${_SERVER_PROPERTIES}" > server.properties
+if [ -f server.properties ]; then
+  # prevent issue with bind mounted server.properties which can not be moved (sed tries to move the file when '-i' is used)
+  _SERVER_PROPERTIES=$(sed '/^white-list=.*/d' server.properties) #Removes white-list= line from server.properties
+  echo "${_SERVER_PROPERTIES}" > server.properties
+fi
 export ALLOW_LIST
 
 # update server.properties with environment settings
