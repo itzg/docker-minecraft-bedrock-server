@@ -32,17 +32,6 @@ data:
   #TICK_DISTANCE: "4"
   #MAX_THREADS: "8"
 ---
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: bds
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
