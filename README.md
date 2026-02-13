@@ -56,6 +56,7 @@ The following environment variables will set the equivalent property in `server.
 Typically, each property is configured instead by the UPPER_SNAKE_CASE equivalent.
 
 - `SERVER_NAME`
+- `ENABLE_SSH`
 - `GAMEMODE`
 - `FORCE_GAMEMODE`
 - `DIFFICULTY`
