@@ -36,7 +36,7 @@ ARG SET_PROPERTY_VERSION=0.1.5
 RUN easy-add --var version=${SET_PROPERTY_VERSION} --var app=set-property --file {{.app}} --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
 
 # renovate: datasource=github-releases packageName=itzg/mc-monitor
-ARG MC_MONITOR_VERSION=0.15.6
+ARG MC_MONITOR_VERSION=0.16.1
 RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --var version=${MC_MONITOR_VERSION} --var app=mc-monitor --file {{.app}} \
   --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
