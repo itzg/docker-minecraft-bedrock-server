@@ -4,18 +4,29 @@ set -eo pipefail
 
 : "${DOWNLOAD_DIR:=${PWD}/.downloads}"
 : "${PREVIEW:=false}"
-# Both net and net-secondary hostnames work
-: "${DOWNLOAD_LINKS_URL:=https://net-secondary.web.minecraft-services.net/api/v1.0/download/links}"
+: "${DOWNLOAD_LINKS_URL:=https://net.web.minecraft-services.net/api/v1.0/download/links}"
+: "${DOWNLOAD_SECONDARY_LINKS_URL:=https://net-secondary.web.minecraft-services.net/api/v1.0/download/links}"
 : "${USE_BOX64:=true}"
+: "${DEBUG_CURL:=false}"
 
 function isTrue() {
   [[ "${1,,}" =~ ^(true|on|1)$ ]] && return 0
   return 1
 }
 
-function replace_version_in_url() {
-  local original_url="$1"
-  local new_version="$2"
+function logWarn() {
+  msg=${1?}
+  echo "WARN $msg" >&2
+}
+
+function logError() {
+  msg=${1?}
+  echo "ERROR $msg" >&2
+}
+
+function replaceVersionInUrl() {
+  local original_url="${1?}"
+  local new_version="${2?}"
 
   # Use sed to replace the version number in the URL
   local modified_url
@@ -38,70 +49,61 @@ function versionFromExisting() {
   fi
 }
 
-function lookupVersion() {
-  platform=${1:?Missing required platform indicator}
-  customVersion=${2:-}
+function lookupDownloadUrl() {
+    platform=${1:?Missing required platform indicator}
 
-  if ! DOWNLOAD_URL=$(
-    curl -fsSL "${DOWNLOAD_LINKS_URL}" |
-      jq --arg platform "$platform" -rR '
-        try(fromjson) catch({}) |
-        .result.links // halt_error(1) |
-          map(
-            select(.downloadType == $platform)
-          ) |
-          if length > 0 then
-            first |
-            .downloadUrl
-          else
-            (
-              "Error: could not find platform (\($platform))\n" |
-              stderr |
-              "" |
-              halt_error(2)
-            )
-          end
-        '
-  ); then
-    case "$platform" in
-    serverBedrockLinux)
-      type=latest
-      ;;
-    serverBedrockPreviewLinux)
-      type=preview
-      ;;
-    *)
-      echo "ERROR invalid platform $platform"
-      exit 2
-    esac
+    for url in "$DOWNLOAD_LINKS_URL" "$DOWNLOAD_SECONDARY_LINKS_URL"; do
+      if downloadUrl=$(
+          curl "${debugCurlArgs[@]}" -fsSL "${url}" |
+            jq --arg platform "$platform" -rR '
+              try(fromjson) catch({}) |
+              .result.links // halt_error(1) |
+                map(
+                  select(.downloadType == $platform)
+                ) |
+                if length > 0 then
+                  first |
+                  .downloadUrl
+                else
+                  (
+                    "Error: could not find platform (\($platform))\n" |
+                    stderr |
+                    "" |
+                    halt_error(2)
+                  )
+                end
+              '
+        ); then
+          echo "$downloadUrl"
+          return 0
+        fi
+    done
 
-    if ! DOWNLOAD_URL=$(curl -fsSL "https://mc-bds-helper.vercel.app/api/$type"); then
-      echo "ERROR failed to lookup Bedrock version and download URL"
-      exit 1
+    return 1
+}
+
+function extractVersionFromUrl() {
+  url=${1:?missing url}
+    # shellcheck disable=SC2012
+    if [[ ${url} =~ http.*/.*-(.*)\.zip ]]; then
+      echo ${BASH_REMATCH[1]}
+      return 0
+    elif versionFromExisting; then
+      logWarn "Minecraft download page failed, so using existing download of $VERSION"
+      echo $VERSION
+      return 0
+    else
+      logError "Failed to derive version from download URL: ${DOWNLOAD_URL}"
+      return 1
     fi
-  fi
-
-  if [[ -n "${customVersion}" && -n "${DOWNLOAD_URL}" ]]; then
-    DOWNLOAD_URL=$(replace_version_in_url "${DOWNLOAD_URL}" "${customVersion}")
-    return
-  fi
-
-  # shellcheck disable=SC2012
-  if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
-    VERSION=${BASH_REMATCH[1]}
-  elif versionFromExisting; then
-    echo "WARN Minecraft download page failed, so using existing download of $VERSION"
-  else
-    echo "Failed to lookup download URL: ${DOWNLOAD_URL}"
-    exit 2
-  fi
 }
 
 echo "Image info: $(paste -d, -s /etc/image.properties)"
 
+debugCurlArgs=()
 if [[ ${DEBUG^^} == TRUE ]]; then
   set -x
-  curlArgs=(-v)
+  debugCurlArgs+=(-v)
   echo "DEBUG: running as $(id -a) with $(ls -ld /data)"
   echo "       current directory is $(pwd)"
 fi
@@ -138,28 +140,43 @@ else # Original logic: if DIRECT_DOWNLOAD_URL is NOT set, proceed with lookup
   case ${VERSION^^} in
     PREVIEW)
       echo "Looking up latest preview version..."
-      lookupVersion serverBedrockPreviewLinux
+      if ! DOWNLOAD_URL=$(lookupDownloadUrl serverBedrockPreviewLinux); then
+          logError " failed to lookup download URL"
+          exit 1
+      fi
+      VERSION=$(extractVersionFromUrl "$DOWNLOAD_URL")
       ;;
     LATEST)
       echo "Looking up latest version..."
-      lookupVersion serverBedrockLinux
+      if ! DOWNLOAD_URL=$(lookupDownloadUrl serverBedrockLinux); then
+          logError "failed to lookup download URL"
+          exit 1
+      fi
+      VERSION=$(extractVersionFromUrl "$DOWNLOAD_URL")
       ;;
     EXISTING)
       if versionFromExisting; then
         echo "Using existing bedrock server executable"
       else
-        echo "ERROR unable to locate existing bedrock server executable"
+        logError " unable to locate existing bedrock server executable"
         exit 1
       fi
       ;;
     *)
-      # use the given version exactly
       if isTrue "$PREVIEW"; then
         echo "Using given preview version ${VERSION}"
-        lookupVersion serverBedrockPreviewLinux "${VERSION}"
+        if ! DOWNLOAD_URL=$(lookupDownloadUrl serverBedrockPreviewLinux); then
+            logError " failed to lookup Bedrock version and download URL"
+            exit 1
+        fi
+        DOWNLOAD_URL=$(replaceVersionInUrl "${DOWNLOAD_URL}" "${VERSION}")
       else
         echo "Using given version ${VERSION}"
-        lookupVersion serverBedrockLinux "${VERSION}"
+        if ! DOWNLOAD_URL=$(lookupDownloadUrl serverBedrockLinux); then
+            logError " failed to lookup Bedrock version and download URL"
+            exit 1
+        fi
+        DOWNLOAD_URL=$(replaceVersionInUrl "${DOWNLOAD_URL}" "${VERSION}")
       fi
       ;;
   esac
@@ -177,9 +194,9 @@ if [[ ! -f "$SERVER" ]]; then
   TMP_ZIP="$DOWNLOAD_DIR/$(basename "${DOWNLOAD_URL}")"
 
   echo "Downloading Bedrock server version ${VERSION} ..."
-  if ! curl "${curlArgs[@]}" -o "${TMP_ZIP}" -A "itzg/minecraft-bedrock-server" -fsSL "${DOWNLOAD_URL}"; then
-    echo "ERROR failed to download from ${DOWNLOAD_URL}"
-    echo "      Double check that the given VERSION is valid"
+  if ! curl "${debugCurlArgs[@]}" -o "${TMP_ZIP}" -A "itzg/minecraft-bedrock-server" -fsSL "${DOWNLOAD_URL}"; then
+    logError " failed to download from ${DOWNLOAD_URL}
+          Double check that the given VERSION is valid"
     exit 2
   fi
 
