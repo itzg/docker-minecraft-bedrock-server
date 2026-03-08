@@ -8,6 +8,9 @@ set -eo pipefail
 : "${DOWNLOAD_SECONDARY_LINKS_URL:=https://net-secondary.web.minecraft-services.net/api/v1.0/download/links}"
 : "${USE_BOX64:=true}"
 : "${DEBUG_CURL:=false}"
+: "${FORCE_PACK_COPY:=false}"
+: "${FORCE_WORLD_COPY:=false}"
+: "${LEVEL_NAME:=Bedrock level}"
 
 function isTrue() {
   [[ "${1,,}" =~ ^(true|on|1)$ ]] && return 0
@@ -247,6 +250,54 @@ if [[ ! -f "$SERVER" ]]; then
 
   chmod +x bedrock_server
   mv bedrock_server "$SERVER"
+fi
+
+if [[ -n "${MC_PACK:-}" ]]; then
+  if [[ -d "$MC_PACK" ]]; then
+    srcDir="$MC_PACK"
+    cleanupTmp=
+  elif [[ -f "$MC_PACK" ]]; then
+    srcDir=$(mktemp -d)
+    cleanupTmp=1
+    unzip -q -o "$MC_PACK" -d "$srcDir"
+  else
+    logWarn "MC_PACK is set but path does not exist or is not a file/directory: $MC_PACK"
+    srcDir=
+  fi
+  if [[ -n "$srcDir" ]]; then
+    for dir in behavior_packs resource_packs; do
+      if [[ -d "$srcDir/$dir" ]]; then
+        mkdir -p "$dir"
+        for sub in "$srcDir/$dir"/*; do
+          [[ -e "$sub" ]] || continue
+          destSub="$dir/$(basename "$sub")"
+          if isTrue "$FORCE_PACK_COPY" && [[ -d "$destSub" ]]; then
+            logWarn "Removing existing pack at $destSub (FORCE_PACK_COPY=TRUE)"
+            rm -rf "$destSub"
+          fi
+          [[ ! -d "$destSub" ]] && echo "Copying pack $(basename "$sub") to $dir" && cp -a "$sub" "$dir/"
+        done
+      fi
+    done
+    levelDir="worlds/$LEVEL_NAME"
+    if [[ -f "$srcDir/level.dat" ]]; then
+      if isTrue "$FORCE_WORLD_COPY" || [[ ! -f "$levelDir/level.dat" ]]; then
+        if isTrue "$FORCE_WORLD_COPY" && [[ -d "$levelDir" ]]; then
+          logWarn "Removing existing world at $levelDir (FORCE_WORLD_COPY=TRUE)"
+          rm -rf "$levelDir"
+        fi
+        for item in "$srcDir"/*; do
+          [[ -e "$item" ]] || continue
+          name=$(basename "$item")
+          [[ "$name" == "behavior_packs" || "$name" == "resource_packs" ]] && continue
+          mkdir -p "$levelDir"
+          echo "Copying world item $name to $levelDir"
+          cp -a "$item" "$levelDir/"
+        done
+      fi
+    fi
+    [[ -n "$cleanupTmp" ]] && rm -rf "$srcDir"
+  fi
 fi
 
 if [[ -n "$OPS" || -n "$MEMBERS" || -n "$VISITORS" ]]; then
