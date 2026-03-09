@@ -48,6 +48,9 @@ For Minecraft Java Edition you'll need to use this image instead:
 - `PACKAGE_BACKUP_KEEP` (`2`) : how many package backups to keep
 - `DIRECT_DOWNLOAD_URL` (no default): This environment variable can be used to provide a **direct download URL** for the Minecraft Bedrock server `.zip` file. When set, this URL will be used instead of attempting to automatically look up the download link from `minecraft.net`. This is particularly useful for CI/CD environments or when the automatic version lookup is temporarily broken due to website changes. Ensure the URL points directly to the `bedrock-server-VERSION.zip` file.
 - `ENABLE_SSH` (default is `false`) : Enable remote console over SSH on port 2222 if this environment variable is set to `true`.
+- `MC_PACK` (no default): Path inside the container to a single archive file (e.g. `.mcpack`, `.mcworld`, `.mctemplate`, `.mcaddon`, or any zip) or to a directory with the same layout. At startup the archive is unpacked (or the directory is read): top-level `behavior_packs/` is merged into `behavior_packs/`, top-level `resource_packs/` into `resource_packs/`, and all other content (when `level.dat` is present) into `worlds/{LEVEL_NAME}`. For `.mcaddon` archives, which use root-level `data/` (behavior) and `resources/` (resource) folders instead of `behavior_packs/` and `resource_packs/`, these are detected and installed automatically using the pack UUID from each manifest as the folder name.
+- `FORCE_WORLD_COPY` (default `false`): When `MC_PACK` contains a world (`level.dat`), set to `true` to remove and replace the existing `worlds/{LEVEL_NAME}` on every startup; otherwise the world is copied only when it does not exist.
+- `FORCE_PACK_COPY` (default `false`): When `MC_PACK` contains `behavior_packs/` or `resource_packs/`, set to `true` to remove and replace existing pack folders with the same name on every startup; otherwise each pack is copied only when it does not already exist.
 
 
 ### Server Properties
@@ -225,6 +228,8 @@ All variables are written to the variables file located at `config/default/varia
 ## Mods Addons
 
 Also known as behavior or resource packs, in order to add mods into your server you can follow these steps, tested with [OPS (One Player Sleep)](https://foxynotail.com/addons/ops/) and [bedrocktweaks](https://bedrocktweaks.net/resource-packs/)
+
+> **Tip:** You can import an archive at startup by setting `MC_PACK` to the in-container path (see [Environment Variables](#environment-variables)). The archive is unpacked: `behavior_packs/` and `resource_packs/` go to the server's pack folders; if the archive contains a world (`level.dat`), the rest goes to `worlds/{LEVEL_NAME}`.
 
 1. Install the mcpack or mcaddon on the client side first, just to make it easier to copy the files to the server, for Windows 10 files should be located on `C:\Users\USER\AppData\Local\Packages\Microsoft.MinecraftUWP_*\LocalState\games\com.mojang`.
 2. Copy over the folders of the mods from either behavior_packs or resource_packs into the server's volume.
