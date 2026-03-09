@@ -112,6 +112,8 @@ if [[ ${DEBUG^^} == TRUE ]]; then
 fi
 
 export HOME="${PWD}"
+export TMPDIR="${HOME}/.tmp"
+mkdir -p "${TMPDIR}"
 
 if [[ ${EULA^^} != TRUE ]]; then
   echo
