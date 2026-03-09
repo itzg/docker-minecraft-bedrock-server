@@ -288,7 +288,6 @@ if [[ -n "${MC_PACK:-}" ]]; then
       if [[ -d "$srcDir/$dir" ]]; then
         mkdir -p "$dir"
         for sub in "$srcDir/$dir"/*; do
-          [[ -e "$sub" ]] || continue
           destSub="$dir/$(basename "$sub")"
           if isTrue "$FORCE_PACK_COPY" && [[ -d "$destSub" ]]; then
             logWarn "Removing existing pack at $destSub (FORCE_PACK_COPY=TRUE)"
@@ -306,7 +305,6 @@ if [[ -n "${MC_PACK:-}" ]]; then
           rm -rf "$levelDir"
         fi
         for item in "$srcDir"/*; do
-          [[ -e "$item" ]] || continue
           name=$(basename "$item")
           [[ "$name" == "behavior_packs" || "$name" == "resource_packs" ]] && continue
           mkdir -p "$levelDir"
