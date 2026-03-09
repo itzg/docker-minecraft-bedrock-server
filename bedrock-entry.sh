@@ -8,6 +8,9 @@ set -eo pipefail
 : "${DOWNLOAD_SECONDARY_LINKS_URL:=https://net-secondary.web.minecraft-services.net/api/v1.0/download/links}"
 : "${USE_BOX64:=true}"
 : "${DEBUG_CURL:=false}"
+: "${FORCE_PACK_COPY:=false}"
+: "${FORCE_WORLD_COPY:=false}"
+: "${LEVEL_NAME:=Bedrock level}"
 : "${DOWNLOAD_PROGRESS:=false}"
 
 function isTrue() {
@@ -110,6 +113,8 @@ if [[ ${DEBUG^^} == TRUE ]]; then
 fi
 
 export HOME="${PWD}"
+export TMPDIR="${HOME}/.tmp"
+mkdir -p "${TMPDIR}"
 
 if [[ ${EULA^^} != TRUE ]]; then
   echo
@@ -252,6 +257,69 @@ if [[ ! -f "$SERVER" ]]; then
 
   chmod +x bedrock_server
   mv bedrock_server "$SERVER"
+fi
+
+if [[ -n "${MC_PACK:-}" ]]; then
+  if [[ -d "$MC_PACK" ]]; then
+    srcDir="$MC_PACK"
+    cleanupTmp=
+  elif [[ -f "$MC_PACK" ]]; then
+    srcDir=$(mktemp -d)
+    cleanupTmp=1
+    unzip -q -o "$MC_PACK" -d "$srcDir"
+  else
+    logWarn "MC_PACK is set but path does not exist or is not a file/directory: $MC_PACK"
+    srcDir=
+  fi
+  if [[ -n "$srcDir" ]]; then
+    if [[ ! -d "$srcDir/behavior_packs" && ! -d "$srcDir/resource_packs" ]] && \
+        [[ -f "$srcDir/data/manifest.json" || -f "$srcDir/resources/manifest.json" ]]; then
+        for subdir in data resources; do
+            packManifestFile="$srcDir/$subdir/manifest.json"
+            [[ -f "$packManifestFile" ]] || continue
+
+            packId=$(jq -r '.header.uuid' "$packManifestFile")
+            destName="behavior_packs"; [[ "$subdir" == "resources" ]] && destName="resource_packs"
+
+            worldPacksFile="$srcDir/world_${destName}.json"
+            worldPacksJson=$(jq -c '[{pack_id: .header.uuid, version: .header.version}]' "$packManifestFile")
+
+            mkdir -p "$srcDir/$destName"
+            mv "$srcDir/$subdir" "$srcDir/$destName/$packId"
+            echo "$worldPacksJson" > "$worldPacksFile" && echo "Generated $worldPacksFile as $worldPacksJson"
+        done
+    fi
+    for dir in behavior_packs resource_packs; do
+      if [[ -d "$srcDir/$dir" ]]; then
+        mkdir -p "$dir"
+        for sub in "$srcDir/$dir"/*; do
+          destSub="$dir/$(basename "$sub")"
+          if isTrue "$FORCE_PACK_COPY" && [[ -d "$destSub" ]]; then
+            logWarn "Removing existing pack at $destSub (FORCE_PACK_COPY=TRUE)"
+            rm -rf "$destSub"
+          fi
+          [[ ! -d "$destSub" ]] && echo "Copying pack $(basename "$sub") to $dir" && cp -a "$sub" "$dir/"
+        done
+      fi
+    done
+    levelDir="worlds/$LEVEL_NAME"
+    if [[ -f "$srcDir/level.dat" ]]; then
+      if isTrue "$FORCE_WORLD_COPY" || [[ ! -f "$levelDir/level.dat" ]]; then
+        if isTrue "$FORCE_WORLD_COPY" && [[ -d "$levelDir" ]]; then
+          logWarn "Removing existing world at $levelDir (FORCE_WORLD_COPY=TRUE)"
+          rm -rf "$levelDir"
+        fi
+        for item in "$srcDir"/*; do
+          name=$(basename "$item")
+          [[ "$name" == "behavior_packs" || "$name" == "resource_packs" ]] && continue
+          mkdir -p "$levelDir"
+          echo "Copying world item $name to $levelDir"
+          cp -a "$item" "$levelDir/"
+        done
+      fi
+    fi
+    [[ -n "$cleanupTmp" ]] && rm -rf "$srcDir"
+  fi
 fi
 
 if [[ -n "$OPS" || -n "$MEMBERS" || -n "$VISITORS" ]]; then
