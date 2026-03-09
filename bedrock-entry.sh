@@ -267,6 +267,23 @@ if [[ -n "${MC_PACK:-}" ]]; then
     srcDir=
   fi
   if [[ -n "$srcDir" ]]; then
+    if [[ ! -d "$srcDir/behavior_packs" && ! -d "$srcDir/resource_packs" ]] && \
+        [[ -f "$srcDir/data/manifest.json" || -f "$srcDir/resources/manifest.json" ]]; then
+        for subdir in data resources; do
+            packManifestFile="$srcDir/$subdir/manifest.json"
+            [[ -f "$packManifestFile" ]] || continue
+            
+            packId=$(jq -r '.header.uuid' "$packManifestFile")
+            destName="behavior_packs"; [[ "$subdir" == "resources" ]] && destName="resource_packs"
+            
+            worldPacksFile="$srcDir/world_${destName}.json"
+            worldPacksJson=$(jq -c '[{pack_id: .header.uuid, version: .header.version}]' "$packManifestFile")
+            
+            mkdir -p "$srcDir/$destName"
+            mv "$srcDir/$subdir" "$srcDir/$destName/$packId"
+            echo "$worldPacksJson" > "$worldPacksFile" && echo "Generated $worldPacksFile as $worldPacksJson"
+        done
+    fi
     for dir in behavior_packs resource_packs; do
       if [[ -d "$srcDir/$dir" ]]; then
         mkdir -p "$dir"
