@@ -8,6 +8,7 @@ set -eo pipefail
 : "${DOWNLOAD_SECONDARY_LINKS_URL:=https://net-secondary.web.minecraft-services.net/api/v1.0/download/links}"
 : "${USE_BOX64:=true}"
 : "${DEBUG_CURL:=false}"
+: "${DOWNLOAD_PROGRESS:=false}"
 
 function isTrue() {
   [[ "${1,,}" =~ ^(true|on|1)$ ]] && return 0
@@ -194,7 +195,11 @@ if [[ ! -f "$SERVER" ]]; then
   TMP_ZIP="$DOWNLOAD_DIR/$(basename "${DOWNLOAD_URL}")"
 
   echo "Downloading Bedrock server version ${VERSION} ..."
-  if ! curl "${debugCurlArgs[@]}" -o "${TMP_ZIP}" -A "itzg/minecraft-bedrock-server" -fsSL "${DOWNLOAD_URL}"; then
+  curlProgressArgs=(-fsSL)
+  if isTrue "$DOWNLOAD_PROGRESS"; then
+    curlProgressArgs=(-fL --progress-bar)
+  fi
+  if ! curl "${debugCurlArgs[@]}" "${curlProgressArgs[@]}" -o "${TMP_ZIP}" -A "itzg/minecraft-bedrock-server" "${DOWNLOAD_URL}"; then
     logError " failed to download from ${DOWNLOAD_URL}
           Double check that the given VERSION is valid"
     exit 2
