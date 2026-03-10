@@ -11,6 +11,7 @@ set -eo pipefail
 : "${FORCE_PACK_COPY:=false}"
 : "${FORCE_WORLD_COPY:=false}"
 : "${LEVEL_NAME:=Bedrock level}"
+: "${DOWNLOAD_PROGRESS:=false}"
 
 function isTrue() {
   [[ "${1,,}" =~ ^(true|on|1)$ ]] && return 0
@@ -199,7 +200,11 @@ if [[ ! -f "$SERVER" ]]; then
   TMP_ZIP="$DOWNLOAD_DIR/$(basename "${DOWNLOAD_URL}")"
 
   echo "Downloading Bedrock server version ${VERSION} ..."
-  if ! curl "${debugCurlArgs[@]}" -o "${TMP_ZIP}" -A "itzg/minecraft-bedrock-server" -fsSL "${DOWNLOAD_URL}"; then
+  curlProgressArgs=(-fsSL)
+  if isTrue "$DOWNLOAD_PROGRESS"; then
+    curlProgressArgs=(-fL --progress-bar)
+  fi
+  if ! curl "${debugCurlArgs[@]}" "${curlProgressArgs[@]}" -o "${TMP_ZIP}" -A "itzg/minecraft-bedrock-server" "${DOWNLOAD_URL}"; then
     logError " failed to download from ${DOWNLOAD_URL}
           Double check that the given VERSION is valid"
     exit 2
@@ -272,13 +277,13 @@ if [[ -n "${MC_PACK:-}" ]]; then
         for subdir in data resources; do
             packManifestFile="$srcDir/$subdir/manifest.json"
             [[ -f "$packManifestFile" ]] || continue
-            
+
             packId=$(jq -r '.header.uuid' "$packManifestFile")
             destName="behavior_packs"; [[ "$subdir" == "resources" ]] && destName="resource_packs"
-            
+
             worldPacksFile="$srcDir/world_${destName}.json"
             worldPacksJson=$(jq -c '[{pack_id: .header.uuid, version: .header.version}]' "$packManifestFile")
-            
+
             mkdir -p "$srcDir/$destName"
             mv "$srcDir/$subdir" "$srcDir/$destName/$packId"
             echo "$worldPacksJson" > "$worldPacksFile" && echo "Generated $worldPacksFile as $worldPacksJson"
