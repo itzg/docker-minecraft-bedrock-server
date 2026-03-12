@@ -175,11 +175,11 @@ in the "LAN Games" part of the "Friends" tab, such as:
 The Bedrock Dedicated Server requires permissions be defined with XUIDs or Xbox GamerTag. Each of `OPS`, `MEMBERS`, and `VISITORS` accepts a comma-separated list of identifiers. For each entry you can use:
 
 - **XUID** — a 16+ digit number (e.g. `2535453759792258`). You can look these up with tools like [MCProfile](https://mcprofile.io/); the XUID is also printed in the server log when a player joins.
-- **Xbox gamertag** — if the value is not a long numeric XUID, it is treated as a gamertag and resolved to an XUID at startup via the [Geyser XUID API](https://api.geysermc.org/v2/xbox/xuid/). This allows using names instead of numbers.
+- **Xbox gamertag** — if the value is not a long numeric XUID, it is treated as a gamertag and resolved to an XUID at startup via the [MCProfile API](https://mcprofile.io/api/v1/bedrock/gamertag). This allows using names instead of numbers.
 
 There are 3 levels of permissions and 3 options to configure each group:
 
-You can mix XUIDs and gamertags in the same list. The API base URL used for resolving gamertags can be overridden with `RESOLVE_XUID_API_URL` (default: `https://api.geysermc.org/v2/xbox/xuid`).
+You can mix XUIDs and gamertags in the same list. The API base URL used for resolving gamertags can be overridden with `RESOLVE_XUID_API_URL` (default: `https://mcprofile.io/api/v1/bedrock/gamertag`).
 
 - `OPS` is used to define operators on the server.
 ```shell
