@@ -6,6 +6,7 @@ set -eo pipefail
 : "${PREVIEW:=false}"
 : "${DOWNLOAD_LINKS_URL:=https://net.web.minecraft-services.net/api/v1.0/download/links}"
 : "${DOWNLOAD_SECONDARY_LINKS_URL:=https://net-secondary.web.minecraft-services.net/api/v1.0/download/links}"
+: "${RESOLVE_XUID_API_URL:=https://mcprofile.io/api/v1/bedrock/gamertag}"
 : "${USE_BOX64:=true}"
 : "${DEBUG_CURL:=false}"
 : "${FORCE_PACK_COPY:=false}"
@@ -26,6 +27,29 @@ function logWarn() {
 function logError() {
   msg=${1?}
   echo "ERROR $msg" >&2
+}
+
+function resolveXuid() {
+  local value="${1?}"
+
+  if [[ $value =~ ^[0-9]+$ ]] && ((10#$value >= 10**15)); then
+    echo "$value"
+    return
+  fi
+  
+  local encoded=$(jq -sRr @uri <<< "$value")
+  local xuid=$(curl "${debugCurlArgs[@]}" -fsSL -A "itzg/minecraft-bedrock-server" "$RESOLVE_XUID_API_URL/$encoded" 2>/dev/null | jq -r '.xuid // empty')
+  
+  echo "${xuid:-$value}"
+}
+
+function resolvePermissionXuids() {
+  local list="$1" perm="$2"
+  IFS=',' read -ra a <<< "$list"
+
+  for v in "${a[@]}"; do
+    resolveXuid "$v" | jq -R --arg p "$perm" '{permission:$p,xuid:.}'
+  done
 }
 
 function replaceVersionInUrl() {
@@ -324,11 +348,11 @@ fi
 
 if [[ -n "$OPS" || -n "$MEMBERS" || -n "$VISITORS" ]]; then
   echo "Updating permissions"
-  jq -n --arg ops "$OPS" --arg members "$MEMBERS" --arg visitors "$VISITORS" '[
-  [$ops      | split(",") | map({permission: "operator", xuid:.})],
-  [$members  | split(",") | map({permission: "member", xuid:.})],
-  [$visitors | split(",") | map({permission: "visitor", xuid:.})]
-  ]| flatten' > permissions.json
+  {
+    resolvePermissionXuids "$OPS" operator
+    resolvePermissionXuids "$MEMBERS" member
+    resolvePermissionXuids "$VISITORS" visitor
+  } | jq -s '.' > permissions.json
 fi
 
 if [[ -n "$ALLOW_LIST_USERS" || -n "$WHITE_LIST_USERS" ]]; then
