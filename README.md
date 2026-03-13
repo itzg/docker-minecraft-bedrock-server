@@ -185,9 +185,6 @@ You can mix XUIDs and gamertags in the same list. The API base URL used for reso
 ```shell
 -e OPS="1234567890,0987654321,player1"
 ```
-```shell
--e OPS="1234567890,0987654321,player1"
-```
 - `MEMBERS` is used to define the members on the server.
 ```shell
 -e MEMBERS="1234567890,player2"
