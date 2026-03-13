@@ -45,9 +45,10 @@ function resolveXuid() {
 
 function resolvePermissionXuids() {
   local list="$1" perm="$2"
-  IFS=',' read -ra a <<< "$list"
+  IFS=',' read -ra a <<< "$(tr '\n' ',' <<< "$list")"
 
   for v in "${a[@]}"; do
+    [[ -z $v ]] && continue
     resolveXuid "$v" | jq -R --arg p "$perm" '{permission:$p,xuid:.}'
   done
 }
@@ -361,9 +362,9 @@ if [[ -n "$ALLOW_LIST_USERS" || -n "$WHITE_LIST_USERS" ]]; then
   if [[ "$allowListUsers" ]]; then
     echo "Setting allow list"
     if [[ "$allowListUsers" != *":"* ]]; then
-      jq -c -n --arg users "$allowListUsers" '$users | split(",") | map({"ignoresPlayerLimit":false,"name": .})' > "allowlist.json"
+      jq -c -n --arg users "$allowListUsers" '$users | split("[,\n]+") | map(select(length>0) | {"ignoresPlayerLimit":false,"name": .})' > "allowlist.json"
     else
-      jq -c -n --arg users "$allowListUsers" '$users | split(",") | map(split(":") | {"ignoresPlayerLimit":false,"name": .[0], "xuid": .[1]})' > "allowlist.json"
+      jq -c -n --arg users "$allowListUsers" '$users | split("[,\n]+") | map(select(length>0) | split(":") | {"ignoresPlayerLimit":false,"name": .[0], "xuid": .[1]})' > "allowlist.json"
     fi
     # activate server property to enable list usage
     ALLOW_LIST=true
@@ -389,8 +390,9 @@ if [[ -n "$VARIABLES" ]]; then
     # Note: Values should not contain unescaped commas or colons
     jq -n --arg vars "$VARIABLES" '
       $vars
-      | split(",")
+      | split("[,\n]+")
       | map(
+          select(length>0) |
           split("=") as $kv |
           { ($kv[0]): ($kv[1] | fromjson? // $kv[1]) }
         )

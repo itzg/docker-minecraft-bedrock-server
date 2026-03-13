@@ -172,7 +172,7 @@ in the "LAN Games" part of the "Friends" tab, such as:
 
 ## Permissions
 
-The Bedrock Dedicated Server requires permissions be defined with XUIDs or Xbox GamerTag. Each of `OPS`, `MEMBERS`, and `VISITORS` accepts a comma-separated list of identifiers. For each entry you can use:
+The Bedrock Dedicated Server requires permissions be defined with XUIDs or Xbox GamerTag. Each of `OPS`, `MEMBERS`, and `VISITORS` accepts a comma-separated or newline-separated list of identifiers. For each entry you can use:
 
 - **XUID** — a 16+ digit number (e.g. `2535453759792258`). You can look these up with tools like [MCProfile](https://mcprofile.io/); the XUID is also printed in the server log when a player joins.
 - **Xbox gamertag** — if the value is not a long numeric XUID, it is treated as a gamertag and resolved to an XUID at startup via the [MCProfile API](https://mcprofile.io/api/v1/bedrock/gamertag). This allows using names instead of numbers.
@@ -183,15 +183,31 @@ You can mix XUIDs and gamertags in the same list. The API base URL used for reso
 
 - `OPS` is used to define operators on the server.
 ```shell
--e OPS="1234567890,0987654321"
+-e OPS="1234567890,0987654321,player1"
+```
+```shell
+-e OPS="1234567890,0987654321,player1"
 ```
 - `MEMBERS` is used to define the members on the server.
 ```shell
--e MEMBERS="1234567890,0987654321"
+-e MEMBERS="1234567890,player2"
 ```
 - `VISITORS` is used to define visitors on the server.
 ```shell
--e VISITORS="1234567890,0987654321"
+-e VISITORS="player3,player4"
+```
+
+`docker-compose.yml` example:
+```yml
+    environment:
+      OPS: |
+        1234567890
+        player1
+      MEMBERS: |
+        player2
+      VISITORS: |
+        player3
+        player4
 ```
 
 ## Allowlist
@@ -200,12 +216,20 @@ There are two ways to handle a whitelist:
 
 The first is to set the `ALLOW_LIST` environment variable to true and map in an [allowlist.json](https://minecraft.wiki/w/Whitelist.json) file (previously known as "whitelist.json") that is custom-crafted to the container.
 
-The other is to set the `ALLOW_LIST_USERS` environment variable to a comma-separated list of gamer tag usernames and their corresponding XUIDs. Each username should be followed by its XUID, separated by a colon. The server will use these details to match the player.
+The other is to set the `ALLOW_LIST_USERS` environment variable to a comma-separated or newline-separated of gamer tag usernames and their corresponding XUIDs. Each username should be followed by its XUID, separated by a colon. The server will use these details to match the player.
 
 There are various tools to look XUIDs up online and they are also printed to the log when a player joins the server.
 
 ```shell
 -e ALLOW_LIST_USERS="player1:1234567890,player2:0987654321"
+```
+
+`docker-compose.yml` example:
+```yml
+    environment:
+      ALLOW_LIST_USERS: |
+        player1:1234567890
+        player2:0987654321
 ```
 
 ## Variables
@@ -215,7 +239,7 @@ Custom server variables are supported by Bedrock. Details and usage instructions
 - [Variables & Secrets - Minecraft Creator Docs](https://learn.microsoft.com/en-us/minecraft/creator/documents/scriptingservers?view=minecraft-bedrock-stable#variables-and-secrets)
 - [Variables & Secrets - minecraft/server-admin example](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server-admin/serversecrets?view=minecraft-bedrock-experimental#getplayerprofilets-1)
 
-Custom server variables are passed in as comma-separated simple key-value pairs or as a full JSON string.
+Custom server variables are passed in as comma-separated or newline-separated simple key-value pairs or as a full JSON string.
 
 Server variables are parsed into their most likely type (number-like turn into numbers, all other inputs are treated as string) using [jq's `fromjson` command](https://jqlang.github.io/jq/manual/#convert-to-from-json). In the example below, `var1` is a string, `var2` is a number, and `var3` is a string. 
 
@@ -229,6 +253,15 @@ All variables are written to the variables file located at `config/default/varia
 
 # pass in a full json object:
 -e VARIABLES='{"mobSpawnRate":22,"enableCheats":true,"worldArray":["My World", "Abc", 123]}'
+```
+
+`docker-compose.yml` example:
+```yml
+    environment:
+      VARIABLES: |
+        var1=customStringValue
+        var2=1234
+        var3=true
 ```
 
 ## Mods Addons
