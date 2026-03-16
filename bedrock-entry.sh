@@ -362,9 +362,9 @@ if [[ -n "$ALLOW_LIST_USERS" || -n "$WHITE_LIST_USERS" ]]; then
   if [[ "$allowListUsers" ]]; then
     echo "Setting allow list"
     if [[ "$allowListUsers" != *":"* ]]; then
-      jq -c -n --arg users "$allowListUsers" '$users | split("[,\n]+") | map(select(length>0) | {"ignoresPlayerLimit":false,"name": .})' > "allowlist.json"
+      jq -c -n --arg users "$allowListUsers" '$users | split("[,\\n]+"; "") | map(select(length>0) | {"ignoresPlayerLimit":false,"name": .})' > "allowlist.json"
     else
-      jq -c -n --arg users "$allowListUsers" '$users | split("[,\n]+") | map(select(length>0) | split(":") | {"ignoresPlayerLimit":false,"name": .[0], "xuid": .[1]})' > "allowlist.json"
+      jq -c -n --arg users "$allowListUsers" '$users | split("[,\\n]+"; "") | map(select(length>0) | split(":") | {"ignoresPlayerLimit":false,"name": .[0], "xuid": .[1]})' > "allowlist.json"
     fi
     # activate server property to enable list usage
     ALLOW_LIST=true
@@ -390,7 +390,7 @@ if [[ -n "$VARIABLES" ]]; then
     # Note: Values should not contain unescaped commas or colons
     jq -n --arg vars "$VARIABLES" '
       $vars
-      | split("[,\n]+")
+      | split("[,\\n]+"; "")
       | map(
           select(length>0) |
           split("=") as $kv |
