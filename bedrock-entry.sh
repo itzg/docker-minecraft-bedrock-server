@@ -314,6 +314,31 @@ if [[ -n "${MC_PACK:-}" ]]; then
             echo "$worldPacksJson" > "$worldPacksFile" && echo "Generated $worldPacksFile as $worldPacksJson"
         done
     fi
+    if [[ -d "$srcDir/addon" ]]; then
+      for addonSub in "$srcDir/addon"/*; do
+        packManifestFile="$addonSub/manifest.json"
+        [[ -f "$packManifestFile" ]] || {
+          logWarn "addon/$(basename "$addonSub"): manifest.json not found; skipping";
+          continue;
+        }
+        packId=$(jq -r '.header.uuid' "$packManifestFile")
+        packKind=$(jq -r '
+          [ .modules[]?.type ] as $types
+          | if ($types | any(IN("data","script"))) then "behavior_packs"
+            elif ($types | any(. == "resources")) then "resource_packs"
+            else empty
+            end
+        ' "$packManifestFile")
+        [[ -n "$packId" && "$packId" != "null" && -n "$packKind" ]] || {
+          logWarn "addon/$(basename "$addonSub"): unsupported manifest modules; skipping";
+          continue;
+        }
+        dest="$srcDir/$packKind/$packId"
+        [[ -d "$dest" ]] && rm -rf "$dest"
+        mkdir -p "$srcDir/$packKind" && mv "$addonSub" "$dest" && echo "Moved addon $(basename "$addonSub") to $packKind/$packId"
+      done
+      rm -rf "$srcDir/addon"
+    fi
     for dir in behavior_packs resource_packs; do
       if [[ -d "$srcDir/$dir" ]]; then
         mkdir -p "$dir"
