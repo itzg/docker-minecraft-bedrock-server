@@ -336,7 +336,7 @@ if [[ -n "${MC_PACK:-}" ]]; then
         fi
         for item in "$srcDir"/*; do
           name=$(basename "$item")
-          [[ "$name" == "behavior_packs" || "$name" == "resource_packs" ]] && continue
+          [[ "$name" == "behavior_packs" || "$name" == "resource_packs" || "$name" == "addon" ]] && continue
           mkdir -p "$levelDir"
           echo "Copying world item $name to $levelDir"
           cp -a "$item" "$levelDir/"
