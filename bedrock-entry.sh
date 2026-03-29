@@ -301,7 +301,9 @@ if [[ -n "${MC_PACK:-}" ]]; then
         [[ -f "$srcDir/data/manifest.json" || -f "$srcDir/resources/manifest.json" ]]; then
         for subdir in data resources; do
             packManifestFile="$srcDir/$subdir/manifest.json"
-            [[ -f "$packManifestFile" ]] || continue
+            if [[ ! -f "$packManifestFile" ]]; then
+              continue;
+            fi
 
             packId=$(jq -r '.header.uuid' "$packManifestFile")
             destName="behavior_packs"; [[ "$subdir" == "resources" ]] && destName="resource_packs"
@@ -361,7 +363,9 @@ if [[ -n "${MC_PACK:-}" ]]; then
         fi
         for item in "$srcDir"/*; do
           name=$(basename "$item")
-          [[ "$name" == "behavior_packs" || "$name" == "resource_packs" || "$name" == "addon" ]] && continue
+          if [[ "$name" == "behavior_packs" || "$name" == "resource_packs" || "$name" == "addon" ]]; then
+            continue;
+          fi
           mkdir -p "$levelDir"
           echo "Copying world item $name to $levelDir"
           cp -a "$item" "$levelDir/"
