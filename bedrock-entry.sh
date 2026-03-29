@@ -317,10 +317,10 @@ if [[ -n "${MC_PACK:-}" ]]; then
     if [[ -d "$srcDir/addon" ]]; then
       for addonSub in "$srcDir/addon"/*; do
         packManifestFile="$addonSub/manifest.json"
-        [[ -f "$packManifestFile" ]] || {
+        if [[ ! -f "$packManifestFile" ]]; then
           logWarn "addon/$(basename "$addonSub"): manifest.json not found; skipping";
           continue;
-        }
+        fi
         packId=$(jq -r '.header.uuid' "$packManifestFile")
         packKind=$(jq -r '
           [ .modules[]?.type ] as $types
@@ -329,10 +329,10 @@ if [[ -n "${MC_PACK:-}" ]]; then
             else empty
             end
         ' "$packManifestFile")
-        [[ -n "$packId" && "$packId" != "null" && -n "$packKind" ]] || {
+        if [[ -z "$packId" || "$packId" == "null" || -z "$packKind" ]]; then
           logWarn "addon/$(basename "$addonSub"): unsupported manifest modules; skipping";
           continue;
-        }
+        fi
         dest="$srcDir/$packKind/$packId"
         [[ -d "$dest" ]] && rm -rf "$dest"
         mkdir -p "$srcDir/$packKind" && mv "$addonSub" "$dest" && echo "Moved addon $(basename "$addonSub") to $packKind/$packId"
