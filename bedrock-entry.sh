@@ -285,6 +285,8 @@ if [[ ! -f "$SERVER" ]]; then
 fi
 
 if [[ -n "${MC_PACK:-}" ]]; then
+  finallyShopt="$(shopt -p nullglob || true)"
+  shopt -s nullglob
   if [[ -d "$MC_PACK" ]]; then
     srcDir="$MC_PACK"
     cleanupTmp=
@@ -374,6 +376,7 @@ if [[ -n "${MC_PACK:-}" ]]; then
     fi
     [[ -n "$cleanupTmp" ]] && rm -rf "$srcDir"
   fi
+  eval "$finallyShopt"
 fi
 
 if [[ -n "$OPS" || -n "$MEMBERS" || -n "$VISITORS" ]]; then
