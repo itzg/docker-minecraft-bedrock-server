@@ -58,13 +58,14 @@ jobs:
             ${{ github.repository_owner }}/${{ env.IMAGE_BASE_NAME }}
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_BASE_NAME }}
           tags: |
-            # pushes an tag matching the release/tag 
+            # pushes a tag matching the release/tag 
             type=pep440,pattern={{version}}
             # stable is a moving tag that points to the latest release
             type=pep440,pattern=stable
+            # and latest is a tag that always latest changes merged to default branch
+            type=raw,value=latest,enable=${{ github.ref_name == github.event.repository.default_branch }}
           flavor: |
-            latest=${{ github.event_name == 'push' && github.ref_name == 'master' }}
-
+            latest=false
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
