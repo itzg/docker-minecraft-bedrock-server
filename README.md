@@ -23,6 +23,23 @@ The latest preview version can be requested by setting `VERSION` to "PREVIEW".
 
 **NOTE** the Bedrock server software is not bundled into this image. Instead, it is downloaded/upgraded from Mojang only during container startup. As such, releases of this image are independent of releases of Mojang's software. 
 
+## Image tags
+
+All image tags can be located in [Docker Hub](https://hub.docker.com/r/itzg/minecraft-bedrock-server/tags) or [GitHub Container Registry](https://github.com/itzg/docker-minecraft-bedrock-server/pkgs/container/minecraft-bedrock-server).
+
+| Tag      |                                                       |
+|----------|-------------------------------------------------------|
+| `latest` | includes the latest features merged to primary branch |
+| `#.#.#`  | a specific release of the image                       |
+| `stable` | points to the newest image release                    |
+
+> [!NOTE]
+> For example:
+> - `itzg/minecraft-bedrock-server:latest`
+> - `itzg/minecraft-bedrock-server` 
+> - `itzg/minecraft-bedrock-server:2026.4.1`
+> - `itzg/minecraft-bedrock-server:stable`
+
 ## Looking for a Java Edition Server
 
 For Minecraft Java Edition you'll need to use this image instead:
