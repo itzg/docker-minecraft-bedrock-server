@@ -5,6 +5,7 @@ services:
       EULA: "TRUE"
     ports:
       - "19132:19132/udp"
+      - "19133:19133/udp"
     volumes:
       - ./data:/data
     stdin_open: true

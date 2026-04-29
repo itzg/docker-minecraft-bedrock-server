@@ -82,6 +82,8 @@ spec:
           ports:
             - containerPort: 19132
               protocol: UDP
+            - containerPort: 19133
+              protocol: UDP
           readinessProbe: &probe
             exec:
               command:
@@ -114,4 +116,6 @@ spec:
     app: bds
   ports:
     - port: 19132
+      protocol: UDP
+    - port: 19133
       protocol: UDP

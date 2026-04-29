@@ -17,6 +17,7 @@ data:
   #LEVEL_SEED: "33480944"
   #SERVER_NAME: "my_minecraft_server"
   #SERVER_PORT: "19132"
+  #SERVER_PORT_V6: "19133"
   #LEVEL_TYPE: "DEFAULT" # Options: FLAT, LEGACY, DEFAULT
   #ALLOW_CHEATS: "false" # Options: true, false
   #MAX_PLAYERS: "10"
@@ -63,6 +64,8 @@ spec:
           ports:
             - containerPort: 19132
               protocol: UDP
+            - containerPort: 19133
+              protocol: UDP
           readinessProbe: &probe
             exec:
               command:
@@ -92,10 +95,15 @@ metadata:
 spec:
   selector:
     app: bds
+  ipFamilyPolicy: PreferDualStack
+  ipFamilies:
+    - IPv4
+    - IPv6
   ports:
     - port: 19132
       protocol: UDP
-  ipFamily: IPv4
+    - port: 19133
+      protocol: UDP
   # Use LoadBalancer if running on a provider that supports that
 #  type: LoadBalancer
   # or use NodePort on a non-managed system;

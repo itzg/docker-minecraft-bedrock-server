@@ -20,7 +20,7 @@ $STORAGE_KEY=$(az storage account keys list --resource-group mineResGroup --acco
 echo $STORAGE_KEY
 
 #to actually create the minecraft server int the dns name "minesvrbedrock"
-#the server will be running into server "minesvrbedrock.southcentralus.azurecontainer.io" port "19132", this take some time be patient.
+#the server will be running into server "minesvrbedrock.southcentralus.azurecontainer.io" ports "19132" (IPv4) and "19133" (IPv6), this take some time be patient.
 az container create --resource-group mineResGroup --name minecotainer --image itzg/minecraft-bedrock-server --dns-name-label minesvrbedrock --ports 19132 19133 --protocol udp --restart-policy OnFailure --environment-variables EULA=TRUE --azure-file-volume-account-name acismineacc --azure-file-volume-account-key $STORAGE_KEY --azure-file-volume-share-name acismineshare --azure-file-volume-mount-path /data
 
 #connect to fileshare drive "M" to edit server.properties and everything else

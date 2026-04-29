@@ -7,10 +7,10 @@
 ## Quickstart
 
 The following starts a Bedrock Dedicated Server running a default version and
-exposing the default UDP port:
+exposing the default UDP ports:
 
 ```bash
-docker run -d -it -e EULA=TRUE -p 19132:19132/udp -v mc-bedrock-data:/data itzg/minecraft-bedrock-server
+docker run -d -it -e EULA=TRUE -p 19132:19132/udp -p 19133:19133/udp -v mc-bedrock-data:/data itzg/minecraft-bedrock-server
 ```
 
 > **NOTE**: if you plan on running a server for a longer amount of time it is highly recommended using a management layer such as [Docker Compose](#deploying-with-docker-compose) or [Kubernetes](#deploying-with-kubernetes) to allow for incremental reconfiguration and image upgrades.
@@ -143,13 +143,15 @@ For example, to configure a flat, creative server instead of the default use:
 ```bash
 docker run -d -it --name bds-flat-creative \
   -e EULA=TRUE -e LEVEL_TYPE=flat -e GAMEMODE=creative \
-  -p 19132:19132/udp itzg/minecraft-bedrock-server
+  -p 19132:19132/udp -p 19133:19133/udp itzg/minecraft-bedrock-server
 ```
 
 ## Exposed Ports
 
-- **UDP** 19132 : the Bedrock server port on IPv4 set by `SERVER_PORT`. The IPv6 port is not exposed by default.
-  **NOTE** that you must append `/udp` when exposing the port, such as `-p 19132:19132/udp` and both IPv4 and IPv6 must be enabled on your host machine.
+- **UDP** 19132 : the Bedrock server port for IPv4 clients, set by `SERVER_PORT`
+- **UDP** 19133 : the Bedrock server port for IPv6 clients, set by `SERVER_PORT_V6`
+
+**NOTE** that you must append `/udp` when exposing the ports, such as `-p 19132:19132/udp -p 19133:19133/udp`.
 
 ## Volumes
 
@@ -160,7 +162,7 @@ You can create a `named volume` and use it as:
 
 ```shell
 docker volume create mc-volume
-docker run -d -it --name mc-server -e EULA=TRUE -p 19132:19132/udp -v mc-volume:/data itzg/minecraft-bedrock-server
+docker run -d -it --name mc-server -e EULA=TRUE -p 19132:19132/udp -p 19133:19133/udp -v mc-volume:/data itzg/minecraft-bedrock-server
 ```
 
 If you're using a named volume and want the bedrock process to run as a non-root user then you will need to pre-create the volume and `chown` it to the desired user.
@@ -335,7 +337,7 @@ When finished, detach from the server console using Ctrl-p, Ctrl-q
 ## Deploying with Docker Compose
 
 The [examples](examples) directory contains [an example Docker compose file](examples/docker-compose.yml) that declares:
-- a service running the bedrock server container and exposing UDP port 19132. In the example is named "bds", short for "Bedrock Dedicated Server", but you can name the service whatever you want
+- a service running the bedrock server container and exposing UDP ports 19132 (IPv4) and 19133 (IPv6). In the example is named "bds", short for "Bedrock Dedicated Server", but you can name the service whatever you want
 - a volume attached to the service at the container path `/data`
 
 ```yaml
@@ -346,6 +348,7 @@ services:
       EULA: "TRUE"
     ports:
       - "19132:19132/udp"
+      - "19133:19133/udp"
     volumes:
       - ./data:/data
     stdin_open: true
