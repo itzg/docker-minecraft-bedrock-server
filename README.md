@@ -7,10 +7,16 @@
 ## Quickstart
 
 The following starts a Bedrock Dedicated Server running a default version and
-exposing the default UDP ports:
+exposing the default UDP port:
 
 ```bash
-docker run -d -it -e EULA=TRUE -p 19132:19132/udp -p 19133:19133/udp -v mc-bedrock-data:/data itzg/minecraft-bedrock-server
+docker run -d -it -e EULA=TRUE -p 19132:19132/udp -v mc-bedrock-data:/data itzg/minecraft-bedrock-server
+```
+
+If your network is dual-stack (IPv4 and IPv6), also map the IPv6 port:
+
+```bash
+-p 19132:19132/udp -p 19133:19133/udp
 ```
 
 > **NOTE**: if you plan on running a server for a longer amount of time it is highly recommended using a management layer such as [Docker Compose](#deploying-with-docker-compose) or [Kubernetes](#deploying-with-kubernetes) to allow for incremental reconfiguration and image upgrades.
@@ -143,7 +149,7 @@ For example, to configure a flat, creative server instead of the default use:
 ```bash
 docker run -d -it --name bds-flat-creative \
   -e EULA=TRUE -e LEVEL_TYPE=flat -e GAMEMODE=creative \
-  -p 19132:19132/udp -p 19133:19133/udp itzg/minecraft-bedrock-server
+  -p 19132:19132/udp itzg/minecraft-bedrock-server
 ```
 
 ## Exposed Ports
@@ -162,7 +168,7 @@ You can create a `named volume` and use it as:
 
 ```shell
 docker volume create mc-volume
-docker run -d -it --name mc-server -e EULA=TRUE -p 19132:19132/udp -p 19133:19133/udp -v mc-volume:/data itzg/minecraft-bedrock-server
+docker run -d -it --name mc-server -e EULA=TRUE -p 19132:19132/udp -v mc-volume:/data itzg/minecraft-bedrock-server
 ```
 
 If you're using a named volume and want the bedrock process to run as a non-root user then you will need to pre-create the volume and `chown` it to the desired user.
