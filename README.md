@@ -7,7 +7,7 @@
 ## Quickstart
 
 The following starts a Bedrock Dedicated Server running a default version and
-exposing the default UDP port:
+exposing the default IPv4 UDP port:
 
 ```bash
 docker run -d -it -e EULA=TRUE -p 19132:19132/udp -v mc-bedrock-data:/data itzg/minecraft-bedrock-server
