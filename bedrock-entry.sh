@@ -446,6 +446,11 @@ set-property --file server.properties --bulk /etc/bds-property-definitions.json
 
 export LD_LIBRARY_PATH=.
 
+: "${ENABLE_BDS_V6BIND_FIX:=false}"
+if isTrue "${ENABLE_BDS_V6BIND_FIX}"; then
+  export LD_PRELOAD=/usr/local/lib/bds-ipv6fix.so
+fi
+
 mcServerRunnerArgs=()
 if isTrue "${ENABLE_SSH}"; then
   mcServerRunnerArgs+=(--remote-console)

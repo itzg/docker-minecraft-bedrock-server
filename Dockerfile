@@ -1,3 +1,9 @@
+FROM debian AS ipv6fix-builder
+RUN apt-get update && apt-get install -y --no-install-recommends tcc libc6-dev \
+    && rm -rf /var/lib/apt/lists/*
+COPY bds-ipv6fix.c /tmp/
+RUN tcc -shared -fPIC -o /bds-ipv6fix.so /tmp/bds-ipv6fix.c
+
 FROM debian
 
 # hook into docker BuildKit --platform support
@@ -7,6 +13,8 @@ ARG TARGETARCH
 ARG TARGETVARIANT
 
 RUN --mount=target=/build,source=build /build/install-packages
+
+COPY --from=ipv6fix-builder /bds-ipv6fix.so /usr/local/lib/bds-ipv6fix.so
 
 ARG BOX64_PACKAGE=box64
 RUN --mount=target=/build,source=build BOX64_PACKAGE=$BOX64_PACKAGE /build/setup-arm64
@@ -60,7 +68,8 @@ COPY bin/* /usr/local/bin/
 # https://minecraft.wiki/w/Bedrock_Edition_1.14.0
 ENV VERSION=LATEST \
     SERVER_PORT=19132 \
-    SERVER_PORT_V6=19133
+    SERVER_PORT_V6=19133 \
+    ENABLE_BDS_V6BIND_FIX=false
 
 HEALTHCHECK --start-period=1m CMD /usr/local/bin/mc-monitor status-bedrock --host 127.0.0.1 --port $SERVER_PORT
 

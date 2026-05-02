@@ -72,6 +72,7 @@ For Minecraft Java Edition you'll need to use this image instead:
 - `DIRECT_DOWNLOAD_URL` (no default): This environment variable can be used to provide a **direct download URL** for the Minecraft Bedrock server `.zip` file. When set, this URL will be used instead of attempting to automatically look up the download link from `minecraft.net`. This is particularly useful for CI/CD environments or when the automatic version lookup is temporarily broken due to website changes. Ensure the URL points directly to the `bedrock-server-VERSION.zip` file.
 - `DOWNLOAD_PROGRESS` (default is `false`) : When set to `true`, displays a progress bar during the Bedrock server download instead of running silently.
 - `ENABLE_SSH` (default is `false`) : Enable remote console over SSH on port 2222 if this environment variable is set to `true`.
+- `ENABLE_BDS_V6BIND_FIX` (default is `false`) : allows `SERVER_PORT` and `SERVER_PORT_V6` to be set to the same port. See [IPv6 same-port fix](#ipv6-same-port-fix).
 - `MC_PACK` (no default): Path inside the container to a single archive file (e.g. `.mcpack`, `.mcworld`, `.mctemplate`, `.mcaddon`, or any zip) or to a directory with the same layout. At startup the archive is unpacked (or the directory is read): top-level `behavior_packs/` is merged into `behavior_packs/`, top-level `resource_packs/` into `resource_packs/`, and all other content (when `level.dat` is present) into `worlds/{LEVEL_NAME}`. For `.mcaddon` archives, which use root-level `data/` (behavior) and `resources/` (resource) folders instead of `behavior_packs/` and `resource_packs/`, these are detected and installed automatically using the pack UUID from each manifest as the folder name.
 - `FORCE_WORLD_COPY` (default `false`): When `MC_PACK` contains a world (`level.dat`), set to `true` to remove and replace the existing `worlds/{LEVEL_NAME}` on every startup; otherwise the world is copied only when it does not exist.
 - `FORCE_PACK_COPY` (default `false`): When `MC_PACK` contains `behavior_packs/` or `resource_packs/`, set to `true` to remove and replace existing pack folders with the same name on every startup; otherwise each pack is copied only when it does not already exist.
@@ -158,6 +159,29 @@ docker run -d -it --name bds-flat-creative \
 - **UDP** 19133 : the Bedrock server port for IPv6 clients, set by `SERVER_PORT_V6`
 
 **NOTE** that you must append `/udp` when exposing the ports, such as `-p 19132:19132/udp -p 19133:19133/udp`.
+
+## IPv6 same-port fix
+
+Bedrock clients do not implement Happy Eyeballs, so a player connecting via a
+dual-stack hostname may land on a different address family than expected and
+miss the server if IPv4 and IPv6 are on different ports. Set
+`ENABLE_BDS_V6BIND_FIX=true` together with matching port values to have both
+listen on the same port:
+
+```yaml
+environment:
+  EULA: "TRUE"
+  ENABLE_BDS_V6BIND_FIX: "true"
+  SERVER_PORT: 19132
+  SERVER_PORT_V6: 19132
+ports:
+  - "19132:19132/udp"
+```
+
+> **NOTE**: setting `SERVER_PORT_V6` to the same value as `SERVER_PORT` only
+> works when `ENABLE_BDS_V6BIND_FIX=true` — without it, BDS will crash on
+> startup. Always configure the IPv6 port via `SERVER_PORT_V6`, not directly
+> in `server.properties`, or the fix will not apply.
 
 ## Volumes
 
