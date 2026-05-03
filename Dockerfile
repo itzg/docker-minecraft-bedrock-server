@@ -9,7 +9,7 @@ ARG TARGETVARIANT
 RUN --mount=target=/build,source=build /build/install-packages
 
 # renovate: datasource=github-releases packageName=poeggi/bds-ipv6fix
-ARG BDS_IPV6FIX_VERSION=1.0.0
+ARG BDS_IPV6FIX_VERSION=0.1.0
 RUN curl -fsSL "https://github.com/poeggi/bds-ipv6fix/releases/download/v${BDS_IPV6FIX_VERSION}/bds-ipv6fix_linux_amd64.so" \
         -o /usr/local/lib/bds-ipv6fix_linux_amd64.so && \
     curl -fsSL "https://github.com/poeggi/bds-ipv6fix/releases/download/v${BDS_IPV6FIX_VERSION}/bds-ipv6fix_linux_arm64.so" \
