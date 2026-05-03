@@ -184,7 +184,7 @@ ports:
 ```
 
 > **NOTE**: setting `SERVER_PORT_V6` to the same value as `SERVER_PORT` only
-> works when `ENABLE_BDS_V6BIND_FIX=true` — without it, BDS will crash on
+> works when `ENABLE_BDS_V6BIND_FIX=true`; without it, BDS will crash on
 > startup. Always configure the IPv6 port via `SERVER_PORT_V6`, not directly
 > in `server.properties`, or the fix will not apply.
 

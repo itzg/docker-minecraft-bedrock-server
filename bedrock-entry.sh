@@ -448,7 +448,11 @@ export LD_LIBRARY_PATH=.
 
 : "${ENABLE_BDS_V6BIND_FIX:=false}"
 if isTrue "${ENABLE_BDS_V6BIND_FIX}"; then
-  export LD_PRELOAD=/usr/local/lib/bds-ipv6fix.so
+  case "$(uname -m)" in
+    x86_64)  export LD_PRELOAD=/usr/local/lib/bds-ipv6fix_linux_amd64.so ;;
+    aarch64) export LD_PRELOAD=/usr/local/lib/bds-ipv6fix_linux_arm64.so ;;
+    *) echo "[bds-ipv6fix] WARNING: unsupported architecture $(uname -m), fix not applied" >&2 ;;
+  esac
 fi
 
 mcServerRunnerArgs=()
