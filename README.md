@@ -164,14 +164,14 @@ docker run -d -it --name bds-flat-creative \
 
 If your server is reachable via a hostname (rather than a bare IP address),
 some players may see **"Unable to connect to world"** while others on the same
-network connect just fine. This typically happens when the hostname resolves to
-both an IPv4 and an IPv6 address: by default the server listens for IPv4 and
-IPv6 on *different* ports (19132 and 19133), so a player whose device picks the
-wrong address family ends up on the wrong port and times out.
+network connect just fine. This is a known limitation of the Bedrock Dedicated
+Server: it listens for IPv4 and IPv6 on *different* ports (19132 and 19133 by
+default), so when a hostname resolves to both address families, a player whose
+device picks the wrong one ends up on the wrong port and times out.
 
-Setting `ENABLE_BDS_V6BIND_FIX=true` lets you configure both address families
-on the same port, so the port number in the server address always works
-regardless of how the client resolves the hostname:
+`ENABLE_BDS_V6BIND_FIX=true` enables a workaround via a shim layer that
+patches BDS at runtime, allowing both address families to share the same port
+so the server address works regardless of how the client resolves the hostname:
 
 ```yaml
 environment:
