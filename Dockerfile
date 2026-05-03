@@ -1,9 +1,3 @@
-FROM debian AS ipv6fix-builder
-RUN apt-get update && apt-get install -y --no-install-recommends tcc libc6-dev \
-    && rm -rf /var/lib/apt/lists/*
-COPY bds-ipv6fix.c /tmp/
-RUN tcc -shared -fPIC -o /bds-ipv6fix.so /tmp/bds-ipv6fix.c
-
 FROM debian
 
 # hook into docker BuildKit --platform support
@@ -14,7 +8,10 @@ ARG TARGETVARIANT
 
 RUN --mount=target=/build,source=build /build/install-packages
 
-COPY --from=ipv6fix-builder /bds-ipv6fix.so /usr/local/lib/bds-ipv6fix.so
+# renovate: datasource=github-releases packageName=poeggi/bds-ipv6fix
+ARG BDS_IPV6FIX_VERSION=1.0.0
+RUN curl -fsSL "https://github.com/poeggi/bds-ipv6fix/releases/download/v${BDS_IPV6FIX_VERSION}/bds-ipv6fix_linux_${TARGETARCH}.so" \
+    -o /usr/local/lib/bds-ipv6fix.so
 
 ARG BOX64_PACKAGE=box64
 RUN --mount=target=/build,source=build BOX64_PACKAGE=$BOX64_PACKAGE /build/setup-arm64
