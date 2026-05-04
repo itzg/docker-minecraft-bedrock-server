@@ -158,9 +158,9 @@ docker run -d -it --name bds-flat-creative \
 ## Exposed Ports
 
 - **UDP** 19132 : the Bedrock server port for IPv4 clients, set by `SERVER_PORT`
-- **UDP** 19133 : the Bedrock server port for IPv6 clients, set by `SERVER_PORT_V6`
+- **UDP** 19133 : the default Bedrock server port for IPv6 clients, set by `SERVER_PORT_V6`
 
-**NOTE** that you must append `/udp` when exposing the ports, such as `-p 19132:19132/udp -p 19133:19133/udp`.
+> **NOTE**: with `ENABLE_BDS_V6BIND_FIX=true`, both ports can be set to the same value (e.g. 19132), exposing a single port for both address families -- recommended for dual-stack environments.
 
 ## IPv6 same-port fix
 
