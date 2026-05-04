@@ -13,13 +13,15 @@ exposing the default IPv4 UDP port:
 docker run -d -it -e EULA=TRUE -p 19132:19132/udp -v mc-bedrock-data:/data itzg/minecraft-bedrock-server
 ```
 
+> **NOTE**: if you plan on running a server for a longer amount of time it is highly recommended using a management layer such as [Docker Compose](#deploying-with-docker-compose) or [Kubernetes](#deploying-with-kubernetes) to allow for incremental reconfiguration and image upgrades.
+
 If your network is dual-stack (IPv4 and IPv6), also map the IPv6 port:
 
 ```bash
 -p 19132:19132/udp -p 19133:19133/udp
 ```
 
-> **NOTE**: if you plan on running a server for a longer amount of time it is highly recommended using a management layer such as [Docker Compose](#deploying-with-docker-compose) or [Kubernetes](#deploying-with-kubernetes) to allow for incremental reconfiguration and image upgrades.
+Alternatively, enable `ENABLE_BDS_V6BIND_FIX=true` to serve both address families on a single port -- see [IPv6 same-port fix](#ipv6-same-port-fix).
 
 ## Upgrading to the latest Bedrock server version
 
