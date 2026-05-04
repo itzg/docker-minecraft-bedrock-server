@@ -448,7 +448,11 @@ export LD_LIBRARY_PATH=.
 
 : "${ENABLE_BDS_V6BIND_FIX:=false}"
 if isTrue "${ENABLE_BDS_V6BIND_FIX}"; then
-  export LD_PRELOAD=/opt/bds-ipv6fix.so
+  if [[ -f /opt/bds-ipv6fix.so ]]; then
+    export LD_PRELOAD=/opt/bds-ipv6fix.so
+  else
+    echo "WARNING: ENABLE_BDS_V6BIND_FIX=true but bds-ipv6fix.so is not available for this platform"
+  fi
 fi
 
 mcServerRunnerArgs=()

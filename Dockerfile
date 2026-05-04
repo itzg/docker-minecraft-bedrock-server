@@ -53,7 +53,11 @@ COPY *.sh /opt/
 COPY property-definitions.json /etc/bds-property-definitions.json
 COPY bin/* /usr/local/bin/
 
-RUN _arch=$([ "$TARGETARCH" = "amd64" ] && echo "x86_64" || echo "aarch64") && \
+RUN case "$TARGETARCH" in \
+      amd64) _arch=x86_64 ;; \
+      arm64) _arch=aarch64 ;; \
+      *) echo "[bds-ipv6fix] unsupported arch $TARGETARCH, ENABLE_BDS_V6BIND_FIX will have no effect" >&2; exit 0 ;; \
+    esac && \
     curl -fsSL "https://github.com/poeggi/bds-ipv6fix/releases/latest/download/bds-ipv6fix_linux_${_arch}.so" \
     -o /opt/bds-ipv6fix.so
 
