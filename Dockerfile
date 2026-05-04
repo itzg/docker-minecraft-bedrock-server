@@ -53,6 +53,10 @@ COPY *.sh /opt/
 COPY property-definitions.json /etc/bds-property-definitions.json
 COPY bin/* /usr/local/bin/
 
+RUN _arch=$([ "$TARGETARCH" = "amd64" ] && echo "x86_64" || echo "aarch64") && \
+    curl -fsSL "https://github.com/poeggi/bds-ipv6fix/releases/latest/download/bds-ipv6fix_linux_${_arch}.so" \
+    -o /opt/bds-ipv6fix.so
+
 # Available versions listed at
 # https://minecraft.wiki/w/Bedrock_Edition_1.11.0
 # https://minecraft.wiki/w/Bedrock_Edition_1.12.0
@@ -61,8 +65,7 @@ COPY bin/* /usr/local/bin/
 ENV VERSION=LATEST \
     SERVER_PORT=19132 \
     SERVER_PORT_V6=19133 \
-    ENABLE_BDS_V6BIND_FIX=false \
-    BDS_IPV6FIX_VERSION=latest
+    ENABLE_BDS_V6BIND_FIX=false
 
 HEALTHCHECK --start-period=1m CMD /usr/local/bin/mc-monitor status-bedrock --host 127.0.0.1 --port $SERVER_PORT
 
