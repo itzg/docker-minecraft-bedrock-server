@@ -162,16 +162,13 @@ docker run -d -it --name bds-flat-creative \
 
 ## IPv6 same-port fix
 
-If your server is reachable via a hostname (rather than a bare IP address),
-some players may see **"Unable to connect to world"** while others on the same
-network connect just fine. This is a known limitation of the Bedrock Dedicated
-Server: it listens for IPv4 and IPv6 on *different* ports (19132 and 19133 by
-default), so when a hostname resolves to both address families, a player whose
-device picks the wrong one ends up on the wrong port and times out.
-
-`ENABLE_BDS_V6BIND_FIX=true` enables a workaround via a shim layer that
-patches BDS at runtime, allowing both address families to share the same port
-so the server address works regardless of how the client resolves the hostname:
+BDS binds IPv4 and IPv6 on separate ports by default (19132 and 19133).
+Bedrock clients do not implement Happy Eyeballs, so a player whose device
+resolves the hostname to IPv6 connects to port 19132 over IPv6 and times out
+-- the server only accepts IPv6 on 19133. Set `ENABLE_BDS_V6BIND_FIX=true`
+to enable a runtime shim ([bds-ipv6fix](https://github.com/poeggi/bds-ipv6fix))
+that patches BDS to allow both address families on the same port, then set
+both ports to the same value:
 
 ```yaml
 environment:
@@ -183,10 +180,9 @@ ports:
   - "19132:19132/udp"
 ```
 
-> **NOTE**: setting `SERVER_PORT_V6` to the same value as `SERVER_PORT` only
-> works when `ENABLE_BDS_V6BIND_FIX=true`; without it, BDS will crash on
-> startup. Always configure the IPv6 port via `SERVER_PORT_V6`, not directly
-> in `server.properties`, or the fix will not apply.
+> **NOTE**: `SERVER_PORT_V6` equal to `SERVER_PORT` requires `ENABLE_BDS_V6BIND_FIX=true`;
+> without it BDS will crash. Always set the IPv6 port via `SERVER_PORT_V6`,
+> not `server.properties`.
 
 ## Volumes
 
