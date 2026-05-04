@@ -447,13 +447,19 @@ set-property --file server.properties --bulk /etc/bds-property-definitions.json
 export LD_LIBRARY_PATH=.
 
 : "${ENABLE_BDS_V6BIND_FIX:=false}"
+: "${BDS_IPV6FIX_VERSION:=latest}"
 if isTrue "${ENABLE_BDS_V6BIND_FIX}"; then
   _so=/data/bds-ipv6fix.so
   if [[ ! -f $_so ]]; then
-    _arch=$(uname -m)
-    curl -fsSL "https://github.com/poeggi/bds-ipv6fix/releases/download/v0.2.0/bds-ipv6fix_linux_${_arch}.so" -o "$_so"
+    if [[ "${BDS_IPV6FIX_VERSION,,}" == "latest" ]]; then
+      _url="https://github.com/poeggi/bds-ipv6fix/releases/latest/download/bds-ipv6fix_linux_$(uname -m).so"
+    else
+      _url="https://github.com/poeggi/bds-ipv6fix/releases/download/v${BDS_IPV6FIX_VERSION}/bds-ipv6fix_linux_$(uname -m).so"
+    fi
+    echo "Downloading bds-ipv6fix ${BDS_IPV6FIX_VERSION}..."
+    curl -fsSL "$_url" -o "$_so"
   fi
-  [[ -f $_so ]] && export LD_PRELOAD=$_so
+  export LD_PRELOAD=$_so
 fi
 
 mcServerRunnerArgs=()

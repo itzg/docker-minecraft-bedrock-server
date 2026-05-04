@@ -61,7 +61,8 @@ COPY bin/* /usr/local/bin/
 ENV VERSION=LATEST \
     SERVER_PORT=19132 \
     SERVER_PORT_V6=19133 \
-    ENABLE_BDS_V6BIND_FIX=false
+    ENABLE_BDS_V6BIND_FIX=false \
+    BDS_IPV6FIX_VERSION=latest
 
 HEALTHCHECK --start-period=1m CMD /usr/local/bin/mc-monitor status-bedrock --host 127.0.0.1 --port $SERVER_PORT
 
