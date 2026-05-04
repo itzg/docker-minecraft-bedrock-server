@@ -448,7 +448,12 @@ export LD_LIBRARY_PATH=.
 
 : "${ENABLE_BDS_V6BIND_FIX:=false}"
 if isTrue "${ENABLE_BDS_V6BIND_FIX}"; then
-  export LD_PRELOAD=/usr/local/lib/bds-ipv6fix.so
+  _so=/data/bds-ipv6fix.so
+  if [[ ! -f $_so ]]; then
+    _arch=$(uname -m)
+    curl -fsSL "https://github.com/poeggi/bds-ipv6fix/releases/download/v0.2.0/bds-ipv6fix_linux_${_arch}.so" -o "$_so"
+  fi
+  [[ -f $_so ]] && export LD_PRELOAD=$_so
 fi
 
 mcServerRunnerArgs=()
