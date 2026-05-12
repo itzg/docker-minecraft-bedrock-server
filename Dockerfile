@@ -33,7 +33,7 @@ ARG ENTRYPOINT_DEMOTER_VERSION=0.4.9
 RUN easy-add --var version=${ENTRYPOINT_DEMOTER_VERSION} --var app=entrypoint-demoter --file {{.app}} --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/v{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
 
 # renovate: datasource=github-releases packageName=itzg/set-property
-ARG SET_PROPERTY_VERSION=0.1.5
+ARG SET_PROPERTY_VERSION=0.1.6
 RUN easy-add --var version=${SET_PROPERTY_VERSION} --var app=set-property --file {{.app}} --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
 
 # renovate: datasource=github-releases packageName=itzg/mc-monitor
