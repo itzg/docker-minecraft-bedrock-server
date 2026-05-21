@@ -81,16 +81,20 @@ function versionFromExisting() {
 function lookupDownloadUrl() {
     platform=${1:?Missing required platform indicator}
 
+    # Map entry script platform arguments to the tracker's top-level keys
+    if [[ "$platform" == "serverBedrockPreviewLinux" ]]; then
+        local type="preview"
+    else
+        local type="release"
+    fi
+
     if downloadUrl=$(curl "${debugCurlArgs[@]}" -fsSL "${DOWNLOAD_LINKS_URL}" | \
-        jq --arg platform "$platform" -r '
-            if $platform == "serverBedrockPreviewLinux" then
-                .linux.preview.url
-            elif $platform == "serverBedrockLinux" then
-                .linux.stable.url
-            else
-                empty
-            end
-            | select(. != null)
+        jq --arg type "$type" -r '
+            .[$type]
+            | to_entries
+            | sort_by(.key | split(".") | map(tointeger))
+            | last
+            | .value.linux.url // empty
         ' 2>/dev/null
     ); then
         if [[ -n "$downloadUrl" && "$downloadUrl" != "null" ]]; then
