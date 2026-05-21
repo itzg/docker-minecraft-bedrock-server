@@ -92,7 +92,7 @@ function lookupDownloadUrl() {
         jq --arg type "$type" -r '
             .[$type]
             | to_entries
-            | sort_by(.key | split(".") | map(tointeger))
+            | sort_by(.key | split(".") | map(tonumber))
             | last
             | .value.linux.url // empty
         ' 2>/dev/null
