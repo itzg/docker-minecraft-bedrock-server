@@ -4,7 +4,8 @@ set -eo pipefail
 
 : "${DOWNLOAD_DIR:=${PWD}/.downloads}"
 : "${PREVIEW:=false}"
-: "${DOWNLOAD_LINKS_URL:=https://raw.githubusercontent.com/kittizz/bedrock-server-downloads/refs/heads/main/bedrock-server-downloads.json}"
+: "${PROCESSED_DOWNLOAD_LINKS_URL:=https://raw.githubusercontent.com/kittizz/bedrock-server-downloads/refs/heads/main/bedrock-server-downloads.json}"
+: "${DOWNLOAD_LINKS_URL:=https://net.web.minecraft-services.net/api/v1.0/download/links}"
 : "${DOWNLOAD_SECONDARY_LINKS_URL:=https://net.web.minecraft-services.net/api/v1.0/download/links}"
 : "${RESOLVE_XUID_API_URL:=https://mcprofile.io/api/v1/bedrock/gamertag}"
 : "${USE_BOX64:=true}"
@@ -88,7 +89,7 @@ function lookupDownloadUrl() {
         local type="release"
     fi
 
-    if downloadUrl=$(curl "${debugCurlArgs[@]}" -fsSL "${DOWNLOAD_LINKS_URL}" | \
+    if downloadUrl=$(curl "${debugCurlArgs[@]}" -fsSL "${PROCESSED_DOWNLOAD_LINKS_URL}" | \
         jq --arg type "$type" -r '
             .[$type]
             | to_entries
@@ -109,9 +110,7 @@ function lookupDownloadUrl() {
 function lookupDownloadUrlFromMinecraftServices() {
     platform=${1:?Missing required platform indicator}
 
-    # quick fix
-    # shellcheck disable=SC2066
-    for url in "$DOWNLOAD_SECONDARY_LINKS_URL"; do
+    for url in "$DOWNLOAD_LINKS_URL" "$DOWNLOAD_SECONDARY_LINKS_URL"; do
       if downloadUrl=$(
           curl "${debugCurlArgs[@]}" -fsSL "${url}" |
             jq --arg platform "$platform" -rR '
