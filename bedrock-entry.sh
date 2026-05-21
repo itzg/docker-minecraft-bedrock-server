@@ -4,8 +4,9 @@ set -eo pipefail
 
 : "${DOWNLOAD_DIR:=${PWD}/.downloads}"
 : "${PREVIEW:=false}"
+: "${PROCESSED_DOWNLOAD_LINKS_URL:=https://raw.githubusercontent.com/kittizz/bedrock-server-downloads/refs/heads/main/bedrock-server-downloads.json}"
 : "${DOWNLOAD_LINKS_URL:=https://net.web.minecraft-services.net/api/v1.0/download/links}"
-: "${DOWNLOAD_SECONDARY_LINKS_URL:=https://net-secondary.web.minecraft-services.net/api/v1.0/download/links}"
+: "${DOWNLOAD_SECONDARY_LINKS_URL:=https://net.web.minecraft-services.net/api/v1.0/download/links}"
 : "${RESOLVE_XUID_API_URL:=https://mcprofile.io/api/v1/bedrock/gamertag}"
 : "${USE_BOX64:=true}"
 : "${DEBUG_CURL:=false}"
@@ -79,6 +80,34 @@ function versionFromExisting() {
 }
 
 function lookupDownloadUrl() {
+    platform=${1:?Missing required platform indicator}
+
+    # Map entry script platform arguments to the tracker's top-level keys
+    if [[ "$platform" == "serverBedrockPreviewLinux" ]]; then
+        local type="preview"
+    else
+        local type="release"
+    fi
+
+    if downloadUrl=$(curl "${debugCurlArgs[@]}" -fsSL "${PROCESSED_DOWNLOAD_LINKS_URL}" | \
+        jq --arg type "$type" -r '
+            .[$type]
+            | to_entries
+            | sort_by(.key | split(".") | map(tonumber))
+            | last
+            | .value.linux.url // empty
+        ' 2>/dev/null
+    ); then
+        if [[ -n "$downloadUrl" && "$downloadUrl" != "null" ]]; then
+            echo "$downloadUrl"
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
+function lookupDownloadUrlFromMinecraftServices() {
     platform=${1:?Missing required platform indicator}
 
     for url in "$DOWNLOAD_LINKS_URL" "$DOWNLOAD_SECONDARY_LINKS_URL"; do
