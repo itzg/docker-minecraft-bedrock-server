@@ -4,9 +4,10 @@ set -eo pipefail
 
 : "${DOWNLOAD_DIR:=${PWD}/.downloads}"
 : "${PREVIEW:=false}"
-: "${PROCESSED_DOWNLOAD_LINKS_URL:=https://raw.githubusercontent.com/kittizz/bedrock-server-downloads/refs/heads/main/bedrock-server-downloads.json}"
+: "${USE_MINECRAFT_SERVICES:=true}"
 : "${DOWNLOAD_LINKS_URL:=https://net.web.minecraft-services.net/api/v1.0/download/links}"
 : "${DOWNLOAD_SECONDARY_LINKS_URL:=https://net.web.minecraft-services.net/api/v1.0/download/links}"
+: "${PROCESSED_DOWNLOAD_LINKS_URL:=https://raw.githubusercontent.com/kittizz/bedrock-server-downloads/refs/heads/main/bedrock-server-downloads.json}"
 : "${RESOLVE_XUID_API_URL:=https://mcprofile.io/api/v1/bedrock/gamertag}"
 : "${USE_BOX64:=true}"
 : "${DEBUG_CURL:=false}"
@@ -81,6 +82,15 @@ function versionFromExisting() {
 
 function lookupDownloadUrl() {
     platform=${1:?Missing required platform indicator}
+
+    if isTrue "$USE_MINECRAFT_SERVICES"; then
+      if downloadUrl=$(lookupDownloadUrlFromMinecraftServices "$platform"); then
+        echo "$downloadUrl"
+        return 0
+      else
+        logWarn "Failed to lookup download URL from Minecraft Services, falling back to processed links"
+      fi
+    fi
 
     # Map entry script platform arguments to the tracker's top-level keys
     if [[ "$platform" == "serverBedrockPreviewLinux" ]]; then
