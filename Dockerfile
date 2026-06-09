@@ -29,7 +29,7 @@ ADD ${GITHUB_BASEURL}/itzg/easy-add/releases/download/${EASY_ADD_VERSION}/easy-a
 RUN chmod +x /usr/bin/easy-add
 
 # renovate: datasource=github-releases packageName=itzg/entrypoint-demoter
-ARG ENTRYPOINT_DEMOTER_VERSION=0.4.10
+ARG ENTRYPOINT_DEMOTER_VERSION=0.5.0
 RUN easy-add --var version=${ENTRYPOINT_DEMOTER_VERSION} --var app=entrypoint-demoter --file {{.app}} --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/v{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
 
 # renovate: datasource=github-releases packageName=itzg/set-property
