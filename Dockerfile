@@ -18,7 +18,10 @@ VOLUME ["/data"]
 
 WORKDIR /data
 
-ENTRYPOINT ["/usr/local/bin/entrypoint-demoter", "--match", "/data", "--debug", "--stdin-on-term", "stop", "/opt/bedrock-entry.sh"]
+# demoter-entry.sh execs into entrypoint-demoter (PID 1). By default it builds the
+# same args as before (--match /data --debug --stdin-on-term stop /opt/bedrock-entry.sh);
+# set STOP_SERVER_ANNOUNCE_DELAY to opt into a graceful announce-then-wait before stop.
+ENTRYPOINT ["/opt/demoter-entry.sh"]
 
 ARG APPS_REV=1
 ARG GITHUB_BASEURL=https://github.com
