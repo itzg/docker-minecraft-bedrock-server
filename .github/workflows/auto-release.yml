@@ -6,6 +6,7 @@ on:
 jobs:
   auto-release:
     runs-on: ubuntu-latest
+    if: github.repository == 'itzg/docker-minecraft-bedrock-server'
     permissions:
       # allow for creating releases/tags
       contents: write
