@@ -1,0 +1,13 @@
+services:
+  bds1:
+    image: itzg/minecraft-bedrock-server
+    environment:
+      EULA: true
+    ports:
+      - "19111:19132/udp"
+  bds2:
+    image: itzg/minecraft-bedrock-server
+    environment:
+      EULA: true
+    ports:
+      - "19222:19132/udp"
