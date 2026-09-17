@@ -11,6 +11,7 @@ RUN --mount=target=/build,source=build /build/install-packages
 ARG BOX64_PACKAGE=box64
 RUN --mount=target=/build,source=build BOX64_PACKAGE=$BOX64_PACKAGE /build/setup-arm64
 
+EXPOSE 19132/tcp
 EXPOSE 19132/udp
 EXPOSE 19133/udp
 
@@ -74,7 +75,7 @@ ENV VERSION=LATEST \
     SERVER_PORT_V6=19133 \
     ENABLE_BDS_V6BIND_FIX=false
 
-HEALTHCHECK --start-period=1m CMD /usr/local/bin/mc-monitor status-bedrock --host 127.0.0.1 --port $SERVER_PORT
+HEALTHCHECK --start-period=1m CMD /usr/local/bin/bds-healthcheck
 
 ARG BUILDTIME=local
 ARG VERSION=local

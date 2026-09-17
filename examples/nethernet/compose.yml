@@ -1,0 +1,18 @@
+services:
+  bds:
+    image: itzg/minecraft-bedrock-server
+    environment:
+      EULA: "TRUE"
+      TRANSPORT: "nethernet"
+      # Bind-only (network_mode: host, or when BDS already listens on a reachable address):
+      # SERVER_UDP_PORTS: "19140-19155"
+      # Advertised mapping behind Docker bridge / extra NAT: <reachable-ip>:external-udp:internal-udp
+      # (IPv4 or IPv6 literal, not a hostname)
+      # SERVER_UDP_PORTS: "<reachable-ip>:19140-19155:19140-19155"
+    ports:
+      - "19132:19132/tcp"
+      - "19140-19155:19140-19155/udp"
+    volumes:
+      - ./data:/data
+    stdin_open: true
+    tty: true

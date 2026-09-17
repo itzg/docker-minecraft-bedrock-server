@@ -19,6 +19,8 @@ If your network is dual-stack (IPv4 and IPv6), also map the IPv6 port: `-p 19132
 
 Alternatively, enable `ENABLE_BDS_V6BIND_FIX=true` to serve both from the same port number - see [IPv6 same-port fix](#ipv6-same-port-fix).
 
+For `TRANSPORT=nethernet`, see [NetherNet](#nethernet).
+
 ## Upgrading to the latest Bedrock server version
 
 With the `VERSION` variable set to "LATEST", which is the default, then the Bedrock server can be upgraded by restarting the container. At every startup, the container checks for the latest version and upgrades, if needed.
@@ -94,6 +96,9 @@ Typically, each property is configured instead by the UPPER_SNAKE_CASE equivalen
 - `ALLOW_LIST`
 - `SERVER_PORT`
 - `SERVER_PORT_V6`
+- `SERVER_IP`
+- `SERVER_UDP_PORTS`
+- `TRANSPORT`
 - `ENABLE_LAN_VISIBILITY`
 - `VIEW_DISTANCE`
 - `TICK_DISTANCE`
@@ -157,8 +162,17 @@ docker run -d -it --name bds-flat-creative \
 
 - **UDP** 19132 : the Bedrock server port for IPv4 clients, set by `SERVER_PORT`
 - **UDP** 19133 : the default Bedrock server port for IPv6 clients, set by `SERVER_PORT_V6`
+- **TCP** 19132 : also `EXPOSE`d; used when `TRANSPORT=nethernet`
 
 > **NOTE**: with `ENABLE_BDS_V6BIND_FIX=true`, both ports can be set to the same value (e.g. 19132), exposing the same port number for both address families - this is recommended for dual-stack environments to avoid connectivity problems.
+
+## NetherNet
+
+`TRANSPORT`, `SERVER_UDP_PORTS`, and `SERVER_IP` are mapped into `server.properties` the same way as the other keys on this list.
+
+When `TRANSPORT=nethernet`, the image healthcheck is `GET http://127.0.0.1:$SERVER_PORT/v1/join`. Otherwise it still runs `mc-monitor status-bedrock` on `$SERVER_PORT`.
+
+[examples/nethernet/compose.yml](examples/nethernet/compose.yml) sets `TRANSPORT=nethernet` and publishes `19132/tcp` plus UDP `19140-19155`. `SERVER_UDP_PORTS` values are those documented in the BDS `server.properties` comments. LAN discovery (UDP 7551) was not tested.
 
 ## IPv6 same-port fix
 
@@ -370,6 +384,8 @@ When finished, detach from the server console using Ctrl-p, Ctrl-q
 The [examples](examples) directory contains [an example Docker compose file](examples/docker-compose.yml) that declares:
 - a service running the bedrock server container and exposing UDP ports 19132 (IPv4) and 19133 (IPv6). In the example is named "bds", short for "Bedrock Dedicated Server", but you can name the service whatever you want
 - a volume attached to the service at the container path `/data`
+
+For `TRANSPORT=nethernet`, see [examples/nethernet/compose.yml](examples/nethernet/compose.yml).
 
 ```yaml
 services:
