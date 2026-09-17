@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Only probe NetherNet HTTP when the user asked for it. Otherwise RakNet UDP
+# via mc-monitor — including unset TRANSPORT and older VERSION= pins.
+SERVER_PORT="${SERVER_PORT:-19132}"
+
+if [[ "${TRANSPORT,,}" == "nethernet" ]]; then
+  exec curl -fsS -o /dev/null --max-time 5 "http://127.0.0.1:${SERVER_PORT}/v1/join"
+fi
+
+exec mc-monitor status-bedrock --host 127.0.0.1 --port "$SERVER_PORT"

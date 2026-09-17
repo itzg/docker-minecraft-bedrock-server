@@ -51,6 +51,16 @@
   "server-portv6": {
     "env": "SERVER_PORT_V6"
   },
+  "server-ip": {
+    "env": "SERVER_IP"
+  },
+  "server-udp-ports": {
+    "env": "SERVER_UDP_PORTS"
+  },
+  "transport": {
+    "env": "TRANSPORT",
+    "allowed": ["raknet", "nethernet"]
+  },
   "enable-lan-visibility": {
     "env": "ENABLE_LAN_VISIBILITY",
     "allowed": ["true", "false"]
