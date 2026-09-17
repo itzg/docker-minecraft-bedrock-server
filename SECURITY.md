@@ -15,6 +15,11 @@ To report a vulnerability privately:
 
 This allows us to review, reproduce, and resolve the issue in a private environment before public disclosure.
 
+### Base Image & Non-Runtime Package Scans
+- **Unused & Non-Runtime Base OS Packages:** Automated scanner reports (e.g., Trivy, Grype) flagging vulnerabilities in base OS packages that are **neither executed during container startup nor involved in running the Bedrock server process** (e.g., `perl` or unused system utilities) are considered non-actionable.
+- **Base Image Lifecycle:** We do not manually patch or update individual OS packages inside the container build (e.g., running `apt-get upgrade`), nor do we accept PRs to do so. Base OS packages are updated automatically whenever upstream base image updates are pulled during routine builds. 
+- **Actionable Reports:** Security advisories must demonstrate a plausible attack vector or exploit path that directly impacts the Bedrock server execution environment.
+
 ---
 
 ## Important Expectations & Bug Bounties
