@@ -29,8 +29,7 @@ ARG GITHUB_BASEURL=https://github.com
 
 # renovate: datasource=github-releases packageName=itzg/easy-add
 ARG EASY_ADD_VERSION=0.8.17
-ADD ${GITHUB_BASEURL}/itzg/easy-add/releases/download/${EASY_ADD_VERSION}/easy-add_${TARGETOS}_${TARGETARCH}${TARGETVARIANT} /usr/bin/easy-add
-RUN chmod +x /usr/bin/easy-add
+ADD --chmod=755 ${GITHUB_BASEURL}/itzg/easy-add/releases/download/${EASY_ADD_VERSION}/easy-add_${TARGETOS}_${TARGETARCH}${TARGETVARIANT} /usr/bin/easy-add
 
 # renovate: datasource=github-releases packageName=itzg/entrypoint-demoter
 ARG ENTRYPOINT_DEMOTER_VERSION=0.5.1
@@ -41,7 +40,7 @@ ARG SET_PROPERTY_VERSION=0.1.6
 RUN easy-add --var version=${SET_PROPERTY_VERSION} --var app=set-property --file {{.app}} --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
 
 # renovate: datasource=github-releases packageName=itzg/mc-monitor
-ARG MC_MONITOR_VERSION=0.17.1
+ARG MC_MONITOR_VERSION=0.18.0
 RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --var version=${MC_MONITOR_VERSION} --var app=mc-monitor --file {{.app}} \
   --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
@@ -75,7 +74,7 @@ ENV VERSION=LATEST \
     SERVER_PORT_V6=19133 \
     ENABLE_BDS_V6BIND_FIX=false
 
-HEALTHCHECK --start-period=1m CMD /usr/local/bin/bds-healthcheck
+HEALTHCHECK --start-period=1m CMD /usr/local/bin/mc-monitor status-bedrock --host 127.0.0.1 --port $SERVER_PORT
 
 ARG BUILDTIME=local
 ARG VERSION=local
