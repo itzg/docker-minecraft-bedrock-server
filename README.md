@@ -170,8 +170,6 @@ docker run -d -it --name bds-flat-creative \
 
 `TRANSPORT`, `SERVER_UDP_PORTS`, and `SERVER_IP` are mapped into `server.properties` the same way as the other keys on this list.
 
-When `TRANSPORT=nethernet`, the image healthcheck is `GET http://127.0.0.1:$SERVER_PORT/v1/join`. Otherwise it still runs `mc-monitor status-bedrock` on `$SERVER_PORT`.
-
 [examples/nethernet/compose.yml](examples/nethernet/compose.yml) sets `TRANSPORT=nethernet` and publishes `19132/tcp` plus UDP `19140-19155`. `SERVER_UDP_PORTS` values are those documented in the BDS `server.properties` comments. LAN discovery (UDP 7551) was not tested.
 
 ## IPv6 same-port fix
