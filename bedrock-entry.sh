@@ -498,7 +498,7 @@ mcServerRunnerArgs=()
 if isTrue "${ENABLE_SSH}"; then
   mcServerRunnerArgs+=(--remote-console)
   if [[ -v REMOTE_CONSOLE_BIND_ADDRESS ]]; then
-    mcServerRunnerArgs+=(--remote-console-port "${REMOTE_CONSOLE_BIND_ADDRESS}")
+    mcServerRunnerArgs+=(--remote-console-bind-address "${REMOTE_CONSOLE_BIND_ADDRESS}")
   fi
   if ! [[ -v RCON_PASSWORD ]]; then
     RCON_PASSWORD=$(openssl rand -hex 12)
