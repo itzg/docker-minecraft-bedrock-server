@@ -9,6 +9,9 @@ services:
       # Advertised mapping behind Docker bridge / extra NAT: <reachable-ip>:external-udp:internal-udp
       # (IPv4 or IPv6 literal, not a hostname)
       # SERVER_UDP_PORTS: "<reachable-ip>:19140-19155:19140-19155"
+      # you may use the literal string <public_ip>, which will be replaced with your public ip from
+      # curl ifconfig.me on startup
+      # SERVER_UDP_PORTS: "<public_ip>:19140-19155:19140-19155"
     ports:
       - "19132:19132/tcp"
       - "19140-19155:19140-19155/udp"
