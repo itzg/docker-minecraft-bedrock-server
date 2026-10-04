@@ -445,6 +445,14 @@ if [[ -n "$ALLOW_LIST_USERS" || -n "$WHITE_LIST_USERS" ]]; then
   fi
 fi
 
+if [[ "$SERVER_UDP_PORTS" == *"<public_ip>"* ]]; then
+  echo "Replacing <public_ip> in $SERVER_UDP_PORTS"
+  public_ip=$(curl -s ifconfig.me)
+  echo "Public IP resolved to: $pubblic_ip"
+  SERVER_UDP_PORTS="${SERVER_UDP_PORTS//<public_ip>/$public_ip}"
+  export SERVER_UDP_PORTS
+fi
+
 if [[ -n "$VARIABLES" ]]; then
   echo "Setting variables"
   mkdir -p config/default
