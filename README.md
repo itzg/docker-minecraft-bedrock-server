@@ -6,20 +6,21 @@
 
 ## Quickstart
 
-The following starts a Bedrock Dedicated Server running a default version and
-exposing the default IPv4 UDP port:
+Bedrock Dedicated Server (BDS) version 1.26.50 and later uses the newer NetherNet transport by default.
+Clients connect to TCP port 19132 first. Then each client uses a UDP port for gameplay.
+
+The following starts a server on a LAN. Replace `192.168.1.10` with the IP address of the Docker host:
 
 ```bash
-docker run -d -it -e EULA=TRUE -p 19132:19132/udp -v mc-bedrock-data:/data itzg/minecraft-bedrock-server
+docker run -d -it -e EULA=TRUE \
+  -e SERVER_UDP_PORTS="192.168.1.10:19140-19155:19140-19155" \
+  -p 19132:19132/tcp -p 19140-19155:19140-19155/udp \
+  -v mc-bedrock-data:/data itzg/minecraft-bedrock-server
 ```
 
+For more information, see [NetherNet](#nethernet).
+
 > **NOTE**: if you plan on running a server for a longer amount of time it is highly recommended using a management layer such as [Docker Compose](#deploying-with-docker-compose) or [Kubernetes](#deploying-with-kubernetes) to allow for incremental reconfiguration and image upgrades.
-
-If your network is dual-stack (IPv4 and IPv6), also map the IPv6 port: `-p 19132:19132/udp -p 19133:19133/udp`
-
-Alternatively, enable `ENABLE_BDS_V6BIND_FIX=true` to serve both from the same port number - see [IPv6 same-port fix](#ipv6-same-port-fix).
-
-For `TRANSPORT=nethernet`, see [NetherNet](#nethernet).
 
 ## Upgrading to the latest Bedrock server version
 
@@ -73,7 +74,7 @@ For Minecraft Java Edition you'll need to use this image instead:
 - `DOWNLOAD_PROGRESS` (default is `false`) : When set to `true`, displays a progress bar during the Bedrock server download instead of running silently.
 - `ENABLE_SSH` (default is `false`) : Enable remote console over SSH on 2222 (or `REMOTE_CONSOLE_BIND_ADDRESS` if provided) if this environment variable is set to `true`.
 - `REMOTE_CONSOLE_BIND_ADDRESS` (default is :2222) : Set the address to bind to for SSH remote console.
-- `ENABLE_BDS_V6BIND_FIX` (default is `false`) : allows `SERVER_PORT` and `SERVER_PORT_V6` to be set to the same port. See [IPv6 same-port fix](#ipv6-same-port-fix). Enabling it should mitigate connectivity issues in dual-stack setups.
+- `ENABLE_BDS_V6BIND_FIX` (default is `false`) : allows `SERVER_PORT` and `SERVER_PORT_V6` to be set to the same port when using the older RakNet protocol. See [IPv6 same-port fix](#ipv6-same-port-fix). Enabling it should mitigate connectivity issues in dual-stack setups using RakNet.
 - `MC_PACK` (no default): Path inside the container to a single archive file (e.g. `.mcpack`, `.mcworld`, `.mctemplate`, `.mcaddon`, or any zip) or to a directory with the same layout. At startup the archive is unpacked (or the directory is read): top-level `behavior_packs/` is merged into `behavior_packs/`, top-level `resource_packs/` into `resource_packs/`, and all other content (when `level.dat` is present) into `worlds/{LEVEL_NAME}`. For `.mcaddon` archives, which use root-level `data/` (behavior) and `resources/` (resource) folders instead of `behavior_packs/` and `resource_packs/`, these are detected and installed automatically using the pack UUID from each manifest as the folder name.
 - `FORCE_WORLD_COPY` (default `false`): When `MC_PACK` contains a world (`level.dat`), set to `true` to remove and replace the existing `worlds/{LEVEL_NAME}` on every startup; otherwise the world is copied only when it does not exist.
 - `FORCE_PACK_COPY` (default `false`): When `MC_PACK` contains `behavior_packs/` or `resource_packs/`, set to `true` to remove and replace existing pack folders with the same name on every startup; otherwise each pack is copied only when it does not already exist.
@@ -156,24 +157,87 @@ For example, to configure a flat, creative server instead of the default use:
 ```bash
 docker run -d -it --name bds-flat-creative \
   -e EULA=TRUE -e LEVEL_TYPE=flat -e GAMEMODE=creative \
-  -p 19132:19132/udp itzg/minecraft-bedrock-server
+  -e SERVER_UDP_PORTS="192.168.1.10:19140-19155:19140-19155" \
+  -p 19132:19132/tcp -p 19140-19155:19140-19155/udp itzg/minecraft-bedrock-server
 ```
 
 ## Exposed Ports
 
-- **UDP** 19132 : the Bedrock server port for IPv4 clients, set by `SERVER_PORT`
-- **UDP** 19133 : the default Bedrock server port for IPv6 clients, set by `SERVER_PORT_V6`
-- **TCP** 19132 : also `EXPOSE`d; used when `TRANSPORT=nethernet`
-
-> **NOTE**: with `ENABLE_BDS_V6BIND_FIX=true`, both ports can be set to the same value (e.g. 19132), exposing the same port number for both address families - this is recommended for dual-stack environments to avoid connectivity problems.
+- **TCP** 19132 : NetherNet signaling for IPv4 and IPv6 clients, set by `SERVER_PORT`
+- **UDP** range : NetherNet gameplay, set by `SERVER_UDP_PORTS`. The image does not set a default range. Publish the range that you set.
+- **UDP** 19132 and 19133 : only for `TRANSPORT=raknet`, set by `SERVER_PORT` (IPv4) and `SERVER_PORT_V6` (IPv6)
 
 ## NetherNet
 
+BDS 1.26.50 and later sets `transport=nethernet` in `server.properties` by default.
+NetherNet is a WebRTC-based transport.
+For the BDS documentation, see the "Transport" section of `bedrock_server_how_to.html` in the `/data` volume.
+For the signaling protocol, see the Mojang [NetherNet onboarding guide](https://mojang.github.io/bedrock-protocol-docs/guides/nether-net-onboarding-guide/).
+
+With NetherNet, BDS uses these ports:
+
+- **TCP `SERVER_PORT`** (default 19132): an HTTP signaling handshake. BDS uses one dual-stack socket for IPv4 and IPv6. `SERVER_PORT_V6` has no effect.
+- **UDP gameplay ports**: BDS uses one UDP port for each client connection. By default, BDS uses a port from the ephemeral range of the operating system. Set `SERVER_UDP_PORTS` to use a fixed range.
+- **UDP 7551**: LAN discovery. Discovery uses broadcast packets, thus it works only on the same subnet.
+
+BDS does not listen on UDP port 19132. If a client sends UDP packets to port 19132, the server does not reply.
+
 `TRANSPORT`, `SERVER_UDP_PORTS`, and `SERVER_IP` are mapped into `server.properties` the same way as the other keys on this list.
 
-[examples/nethernet/compose.yml](examples/nethernet/compose.yml) sets `TRANSPORT=nethernet` and publishes `19132/tcp` plus UDP `19140-19155`. `SERVER_UDP_PORTS` values are those documented in the BDS `server.properties` comments. LAN discovery (UDP 7551) was not tested.
+### Set the UDP port range
+
+During the handshake, BDS sends the client a list of addresses and UDP ports. The client must be able to reach one of these addresses.
+
+- With `network_mode: host`, BDS sends the addresses of the host. Set only the port range, for example `SERVER_UDP_PORTS: "19140-19155"`.
+- With a Docker bridge network, rootless networking or NAT, BDS can send addresses that the client cannot reach. Set the address that clients use, for example `SERVER_UDP_PORTS: "192.168.1.10:19140-19155:19140-19155"`.
+
+Use an IPv4 or IPv6 literal, not a hostname.
+To use the public IP address of the host, use the literal string `<public_ip>`. At startup, the image replaces it with the result of `curl ifconfig.me`.
+
+Use a range with at least one port for each player (`max-players`, default 10).
+Publish the TCP port and the full UDP range.
+For an example, see [examples/nethernet/compose.yml](examples/nethernet/compose.yml).
+
+### Firewall
+
+On the host firewall and on all network firewalls between the clients and the server, allow these inbound connections:
+
+- TCP `SERVER_PORT` (default 19132)
+- The UDP range in `SERVER_UDP_PORTS`
+- UDP 7551, only if you use LAN discovery on the same subnet
+
+### Test the connection
+
+The container health check connects to the server through the loopback interface.
+Thus a "healthy" status does not show that clients can connect through the firewall.
+To do a test, run this command on a different computer:
+
+```bash
+curl http://<server-ip>:19132/v1/join
+```
+
+The server sends its name, version and number of players as JSON.
+
+### Allowlist is on by default
+
+Recent BDS versions set `allow-list=true` by default.
+If the list is empty, the server refuses all players with the message "You're not invited to play on this server".
+Add players with `ALLOW_LIST_USERS` (see [Allowlist](#allowlist)), or set `ALLOW_LIST=false`.
+
+### RakNet
+
+To use the earlier UDP transport, set `TRANSPORT=raknet`.
+BDS then listens on UDP `SERVER_PORT` (IPv4, default 19132) and UDP `SERVER_PORT_V6` (IPv6, default 19133).
+Publish both ports, for example `-p 19132:19132/udp -p 19133:19133/udp`.
+BDS 1.26.51 logs an error that NetherNet is the only supported transport.
+
+> **NOTE**: Aternos reports that Minecraft 26.60 removes RakNet. Refer to [NetherNet protocol (Minecraft: Bedrock Edition)](https://support.aternos.org/hc/en-us/articles/39155890785053-NetherNet-protocol-Minecraft-Bedrock-Edition).
 
 ## IPv6 same-port fix
+
+> **NOTE**: This fix applies only to `TRANSPORT=raknet`. Do not use it with NetherNet.
+> The shim changes each IPv6 socket that binds to `SERVER_PORT_V6`, which includes the NetherNet TCP socket.
+> If `SERVER_PORT_V6` is equal to `SERVER_PORT`, the TCP socket becomes IPv6-only, and IPv4 clients cannot connect.
 
 BDS binds IPv4 and IPv6 on separate ports by default (19132 and 19133).
 Bedrock clients do not implement Happy Eyeballs, so a player whose device
@@ -202,11 +266,19 @@ ports:
 - `/data` : the location where the downloaded server is expanded and ran. Also contains the
   configuration properties file `server.properties`
 
+> **NOTE**: On hosts with SELinux enabled (for example Fedora or RHEL), add a label option to bind mounts, for example `-v ./data:/data:z`.
+> Without the option, SELinux can prevent the container from reading or writing the folder.
+> Use `:z` (lower case) if more than one container uses the same folder.
+> `:Z` (upper case) gives the folder a private label for one container only. Named volumes do not need the option.
+
 You can create a `named volume` and use it as:
 
 ```shell
 docker volume create mc-volume
-docker run -d -it --name mc-server -e EULA=TRUE -p 19132:19132/udp -v mc-volume:/data itzg/minecraft-bedrock-server
+docker run -d -it --name mc-server -e EULA=TRUE \
+  -e SERVER_UDP_PORTS="192.168.1.10:19140-19155:19140-19155" \
+  -p 19132:19132/tcp -p 19140-19155:19140-19155/udp \
+  -v mc-volume:/data itzg/minecraft-bedrock-server
 ```
 
 If you're using a named volume and want the bedrock process to run as a non-root user then you will need to pre-create the volume and `chown` it to the desired user.
@@ -232,6 +304,9 @@ When running the container on your LAN, you can find and connect to the dedicate
 in the "LAN Games" part of the "Friends" tab, such as:
 
 ![](docs/example-client.jpg)
+
+With NetherNet, LAN discovery uses UDP port 7551 broadcasts. If the server does not show in "LAN Games",
+add it in the "Servers" tab. Use the IP address of the host and the TCP port (default 19132).
 
 ## Permissions
 
@@ -381,10 +456,10 @@ When finished, detach from the server console using Ctrl-p, Ctrl-q
 ## Deploying with Docker Compose
 
 The [examples](examples) directory contains [an example Docker compose file](examples/docker-compose.yml) that declares:
-- a service running the bedrock server container and exposing UDP ports 19132 (IPv4) and 19133 (IPv6). In the example is named "bds", short for "Bedrock Dedicated Server", but you can name the service whatever you want
+- a service running the bedrock server container and exposing TCP port 19132 and UDP ports 19140-19155 for NetherNet. In the example is named "bds", short for "Bedrock Dedicated Server", but you can name the service whatever you want
 - a volume attached to the service at the container path `/data`
 
-For `TRANSPORT=nethernet`, see [examples/nethernet/compose.yml](examples/nethernet/compose.yml).
+Replace `192.168.1.10` with the IP address of the Docker host. For more information, see [NetherNet](#nethernet).
 
 ```yaml
 services:
@@ -392,9 +467,12 @@ services:
     image: itzg/minecraft-bedrock-server
     environment:
       EULA: "TRUE"
+      # NetherNet: replace 192.168.1.10 with the IP address of the Docker host
+      SERVER_UDP_PORTS: "192.168.1.10:19140-19155:19140-19155"
     ports:
-      - "19132:19132/udp"
-      - "19133:19133/udp"
+      # Note the newer NetherNet protocol uses different ports to RakNet
+      - "19132:19132/tcp"
+      - "19140-19155:19140-19155/udp"
     volumes:
       - ./data:/data
     stdin_open: true

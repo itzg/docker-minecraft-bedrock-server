@@ -3,9 +3,12 @@ services:
     image: itzg/minecraft-bedrock-server
     environment:
       EULA: "TRUE"
+      # NetherNet: replace 192.168.1.10 with the IP address of the Docker host
+      SERVER_UDP_PORTS: "192.168.1.10:19140-19155:19140-19155"
     ports:
-      - "19132:19132/udp"
-      - "19133:19133/udp"
+      # Note the newer NetherNet protocol uses different ports to RakNet
+      - "19132:19132/tcp"
+      - "19140-19155:19140-19155/udp"
     volumes:
       - ./data:/data
     stdin_open: true
