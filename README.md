@@ -458,13 +458,12 @@ When finished, detach from the server console using Ctrl-p, Ctrl-q
 ## Deploying with Docker Compose
 
 The [examples](examples) directory contains [an example Docker compose file](examples/docker-compose.yml) that declares:
-- a service running the bedrock server container and exposing TCP port 19132 and UDP ports 19140-19155 for NetherNet. In the example is named "bds", short for "Bedrock Dedicated Server", but you can name the service whatever you want
-- a volume attached to the service at the container path `/data`
-
-- For LAN only: Replace `192.168.1.10` with the IP address of the Docker host.
-- For Internet: Replace `192.168.1.10` with a static public IP address, or `<public_ip>` to look up your current IP at startup.
-
-For more information, see [NetherNet](#nethernet).
+- A service running the bedrock server container. In the example is named "bds", short for "Bedrock Dedicated Server", but you can name the service whatever you want.
+- The service exposes TCP port 19132 and UDP ports 19140-19155 for NetherNet. For more information, see [NetherNet](#nethernet).
+  - For LAN only: Replace `192.168.1.10` with the IP address of the Docker host.
+  - For Internet: Replace `192.168.1.10` with a static public IP address, or `<public_ip>` to look up your current IP at startup.
+- EULA must be true, other env variables can be defined to configure the server here as well.
+- A volume attached to the service at the container path `/data`
 
 ```yaml
 services:
