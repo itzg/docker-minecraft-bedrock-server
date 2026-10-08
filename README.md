@@ -9,7 +9,8 @@
 Bedrock Dedicated Server (BDS) version 1.26.50 and later uses the newer NetherNet transport by default.
 Clients connect to TCP port 19132 first. Then each client uses a UDP port for gameplay.
 
-The following starts a server on a LAN. Replace `192.168.1.10` with the IP address of the Docker host:
+The following starts a server on a LAN. Replace `192.168.1.10` with the IP address of the Docker host.
+Alternatively, you can use `<public_ip>` in place of an ip address to resolve to your public ip at startup.
 
 ```bash
 docker run -d -it -e EULA=TRUE \
@@ -190,6 +191,7 @@ During the handshake, BDS sends the client a list of addresses and UDP ports. Th
 
 - With `network_mode: host`, BDS sends the addresses of the host. Set only the port range, for example `SERVER_UDP_PORTS: "19140-19155"`.
 - With a Docker bridge network, rootless networking or NAT, BDS can send addresses that the client cannot reach. Set the address that clients use, for example `SERVER_UDP_PORTS: "192.168.1.10:19140-19155:19140-19155"`.
+- IMPORTANT: to access over the internet you need to use the public ip in the `SERVER_UDP_PORTS`, and forward all the ports.
 
 Use an IPv4 or IPv6 literal, not a hostname.
 To use the public IP address of the host, use the literal string `<public_ip>`. At startup, the image replaces it with the result of `curl ifconfig.me`.
@@ -456,10 +458,12 @@ When finished, detach from the server console using Ctrl-p, Ctrl-q
 ## Deploying with Docker Compose
 
 The [examples](examples) directory contains [an example Docker compose file](examples/docker-compose.yml) that declares:
-- a service running the bedrock server container and exposing TCP port 19132 and UDP ports 19140-19155 for NetherNet. In the example is named "bds", short for "Bedrock Dedicated Server", but you can name the service whatever you want
-- a volume attached to the service at the container path `/data`
-
-Replace `192.168.1.10` with the IP address of the Docker host. For more information, see [NetherNet](#nethernet).
+- A service running the bedrock server container. In the example is named "bds", short for "Bedrock Dedicated Server", but you can name the service whatever you want.
+- The service exposes TCP port 19132 and UDP ports 19140-19155 for NetherNet. For more information, see [NetherNet](#nethernet).
+  - For LAN only: Replace `192.168.1.10` with the IP address of the Docker host.
+  - For Internet: Replace `192.168.1.10` with a static public IP address, or `<public_ip>` to look up your current IP at startup.
+- EULA must be true, other env variables can be defined to configure the server here as well.
+- A volume attached to the service at the container path `/data`
 
 ```yaml
 services:
@@ -468,6 +472,8 @@ services:
     environment:
       EULA: "TRUE"
       # NetherNet: replace 192.168.1.10 with the IP address of the Docker host
+      # If this server is meant to be accessible over the internet, and has a dynamic you
+      # can use "<public_ip>" in place of an ip address to resolve your public ip on startup
       SERVER_UDP_PORTS: "192.168.1.10:19140-19155:19140-19155"
     ports:
       # Note the newer NetherNet protocol uses different ports to RakNet

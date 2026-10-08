@@ -4,6 +4,8 @@ services:
     environment:
       EULA: "TRUE"
       # NetherNet: replace 192.168.1.10 with the IP address of the Docker host
+      # If this server is meant to be accessible over the internet, and has a dynamic you
+      # can use "<public_ip>" in place of an ip address to resolve your public ip on startup
       SERVER_UDP_PORTS: "192.168.1.10:19140-19155:19140-19155"
     ports:
       # Note the newer NetherNet protocol uses different ports to RakNet
