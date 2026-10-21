@@ -3,7 +3,7 @@
 #   for backups that is unlikely to be in use. 
 #
 # NOTE: The save command may be a way around this and is under investigation:
-#   https://minecraft.gamepedia.com/Commands/save
+#   https://minecraft.wiki/w/Commands/save
 
 ---
 apiVersion: v1

@@ -1,1 +1,5 @@
 docs/*
+.git
+examples/
+*.md
+.github

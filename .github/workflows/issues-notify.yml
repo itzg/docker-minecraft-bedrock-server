@@ -1,0 +1,16 @@
+name: Issues notify
+
+on:
+  issues:
+    types:
+      - opened
+      - labeled
+      - unlabeled
+      - closed
+
+jobs:
+  notify:
+    if: github.repository_owner == 'itzg'
+    uses: itzg/github-workflows/.github/workflows/issues-notify-discord.yml@main
+    secrets:
+      discordWebhook: "${{secrets.DISCORD_ISSUES_WEBHOOK}}"

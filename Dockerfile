@@ -5,45 +5,54 @@ FROM ${BASE_IMAGE}
 
 # hook into docker BuildKit --platform support
 # see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
+ARG TARGETOS
 ARG TARGETARCH
+ARG TARGETVARIANT
 
-RUN apt-get update && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    curl \
-    unzip \
-    jq \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+RUN --mount=target=/build,source=build /build/install-packages
 
-# Instal box64 on arm
-RUN if [ "$TARGETARCH" = "arm64" ] ; then \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y debian-keyring && \
-    curl -L https://ryanfortner.github.io/box64-debs/box64.list -o /etc/apt/sources.list.d/box64.list && \
-    curl -L https://ryanfortner.github.io/box64-debs/KEY.gpg | gpg --dearmor | tee /etc/apt/trusted.gpg.d/box64-debs-archive-keyring.gpg && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y box64-generic-arm \
-        && apt-get clean \
-        && rm -rf /var/lib/apt/lists/* ;\
-    fi
+ARG BOX64_PACKAGE=box64
+RUN --mount=target=/build,source=build BOX64_PACKAGE=$BOX64_PACKAGE /build/setup-arm64
 
+EXPOSE 19132/tcp
 EXPOSE 19132/udp
+EXPOSE 19133/udp
 
 VOLUME ["/data"]
 
 WORKDIR /data
 
-ENTRYPOINT ["/usr/local/bin/entrypoint-demoter", "--match", "/data", "--debug", "--stdin-on-term", "stop", "/opt/bedrock-entry.sh"]
+# demoter-entry.sh execs into entrypoint-demoter (PID 1). By default it builds the
+# same args as before (--match /data --debug --stdin-on-term stop /opt/bedrock-entry.sh);
+# set STOP_SERVER_ANNOUNCE_DELAY to opt into a graceful announce-then-wait before stop.
+ENTRYPOINT ["/opt/demoter-entry.sh"]
 
-ARG EASY_ADD_VERSION=0.7.0
-ADD https://github.com/itzg/easy-add/releases/download/${EASY_ADD_VERSION}/easy-add_linux_${TARGETARCH} /usr/local/bin/easy-add
-RUN chmod +x /usr/local/bin/easy-add
+ARG APPS_REV=1
+ARG GITHUB_BASEURL=https://github.com
 
-RUN easy-add --var version=0.4.0 --var app=entrypoint-demoter --file {{.app}} --from https://github.com/itzg/{{.app}}/releases/download/v{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
+# renovate: datasource=github-releases packageName=itzg/easy-add
+ARG EASY_ADD_VERSION=0.8.17
+ADD --chmod=755 ${GITHUB_BASEURL}/itzg/easy-add/releases/download/${EASY_ADD_VERSION}/easy-add_${TARGETOS}_${TARGETARCH}${TARGETVARIANT} /usr/bin/easy-add
 
-RUN easy-add --var version=1.6.2 --var app=restify --file {{.app}} --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
+# renovate: datasource=github-releases packageName=itzg/entrypoint-demoter
+ARG ENTRYPOINT_DEMOTER_VERSION=0.5.1
+RUN easy-add --var version=${ENTRYPOINT_DEMOTER_VERSION} --var app=entrypoint-demoter --file {{.app}} --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/v{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
 
-RUN easy-add --var version=0.5.0 --var app=mc-monitor --file {{.app}} --from https://github.com/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
+# renovate: datasource=github-releases packageName=itzg/set-property
+ARG SET_PROPERTY_VERSION=0.1.6
+RUN easy-add --var version=${SET_PROPERTY_VERSION} --var app=set-property --file {{.app}} --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_linux_${TARGETARCH}.tar.gz
+
+# renovate: datasource=github-releases packageName=itzg/mc-monitor
+ARG MC_MONITOR_VERSION=1.18.3
+RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
+  --var version=${MC_MONITOR_VERSION} --var app=mc-monitor --file {{.app}} \
+  --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
+
+# renovate: datasource=github-releases packageName=itzg/mc-server-runner
+ARG MC_SERVER_RUNNER_VERSION=1.16.1
+RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
+  --var version=${MC_SERVER_RUNNER_VERSION} --var app=mc-server-runner --file {{.app}} \
+  --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
 
 ARG MC_HELPER_VERSION=1.35.0
 ARG MC_HELPER_BASE_URL=https://github.com/itzg/mc-image-helper/releases/download/${MC_HELPER_VERSION}
@@ -58,12 +67,31 @@ COPY *.sh /opt/
 COPY property-definitions.json /etc/bds-property-definitions.json
 COPY bin/* /usr/local/bin/
 
+RUN case "$TARGETARCH" in \
+      amd64) _arch=x86_64 ;; \
+      arm64) _arch=aarch64 ;; \
+      *) echo "[bds-ipv6fix] unsupported arch $TARGETARCH, ENABLE_BDS_V6BIND_FIX will have no effect" >&2; exit 0 ;; \
+    esac && \
+    curl -fsSL "https://github.com/poeggi/bds-ipv6fix/releases/latest/download/bds-ipv6fix_linux_${_arch}.so" \
+    -o /opt/bds-ipv6fix.so
+
 # Available versions listed at
-# https://minecraft.gamepedia.com/Bedrock_Edition_1.11.0
-# https://minecraft.gamepedia.com/Bedrock_Edition_1.12.0
-# https://minecraft.gamepedia.com/Bedrock_Edition_1.13.0
-# https://minecraft.gamepedia.com/Bedrock_Edition_1.14.0
+# https://minecraft.wiki/w/Bedrock_Edition_1.11.0
+# https://minecraft.wiki/w/Bedrock_Edition_1.12.0
+# https://minecraft.wiki/w/Bedrock_Edition_1.13.0
+# https://minecraft.wiki/w/Bedrock_Edition_1.14.0
 ENV VERSION=LATEST \
-    SERVER_PORT=19132
+    SERVER_PORT=19132 \
+    SERVER_PORT_V6=19133 \
+    ENABLE_BDS_V6BIND_FIX=false
 
 HEALTHCHECK --start-period=1m CMD /usr/local/bin/mc-monitor status-bedrock --host 127.0.0.1 --port $SERVER_PORT
+
+ARG BUILDTIME=local
+ARG VERSION=local
+ARG REVISION=local
+COPY <<EOF /etc/image.properties
+buildtime=${BUILDTIME}
+version=${VERSION}
+revision=${REVISION}
+EOF

@@ -2,62 +2,184 @@
 
 set -eo pipefail
 
-: "${TMP_DIR:=/tmp}"
+: "${DOWNLOAD_DIR:=${PWD}/.downloads}"
 : "${PREVIEW:=false}"
+: "${USE_MINECRAFT_SERVICES:=true}"
+: "${DOWNLOAD_LINKS_URL:=https://net.web.minecraft-services.net/api/v1.0/download/links}"
+: "${DOWNLOAD_SECONDARY_LINKS_URL:=https://net.web.minecraft-services.net/api/v1.0/download/links}"
+: "${PROCESSED_DOWNLOAD_LINKS_URL:=https://raw.githubusercontent.com/kittizz/bedrock-server-downloads/refs/heads/main/bedrock-server-downloads.json}"
+: "${RESOLVE_XUID_API_URL:=https://mcprofile.io/api/v1/bedrock/gamertag}"
+: "${USE_BOX64:=true}"
+: "${DEBUG_CURL:=false}"
+: "${FORCE_PACK_COPY:=false}"
+: "${FORCE_WORLD_COPY:=false}"
+: "${LEVEL_NAME:=Bedrock level}"
+: "${DOWNLOAD_PROGRESS:=false}"
 
 function isTrue() {
-  case "${1,,}" in
-  true | on | 1)
-    return 0
-    ;;
-  *)
-    return 1
-    ;;
-  esac
+  [[ "${1,,}" =~ ^(true|on|1)$ ]] && return 0
+  return 1
 }
 
-function lookupVersion() {
-  platform=${1:?Missing required platform indicator}
+function logWarn() {
+  msg=${1?}
+  echo "WARN $msg" >&2
+}
 
-  # shellcheck disable=SC2034
-  for i in {1..3}; do
-    DOWNLOAD_URL=$(restify --user-agent=itzg/minecraft-bedrock-server --headers "accept-language:*" --attribute=data-platform="${platform}" "${downloadPage}" 2> restify.err | jq -r '.[0].href' || echo '')
-    if [[ ${DOWNLOAD_URL} ]]; then
-      break 2
-    fi
-    sleep 1
+function logError() {
+  msg=${1?}
+  echo "ERROR $msg" >&2
+}
+
+function resolveXuid() {
+  local value="${1?}"
+
+  if [[ $value =~ ^[0-9]+$ ]] && ((10#$value >= 10**15)); then
+    echo "$value"
+    return
+  fi
+
+  local encoded=$(jq -sRr @uri <<< "$value")
+  local xuid=$(curl "${debugCurlArgs[@]}" -fsSL -A "itzg/minecraft-bedrock-server" "$RESOLVE_XUID_API_URL/$encoded" 2>/dev/null | jq -r '.xuid // empty')
+
+  echo "${xuid:-$value}"
+}
+
+function resolvePermissionXuids() {
+  local list="$1" perm="$2"
+  IFS=',' read -ra a <<< "$(tr '\n' ',' <<< "$list")"
+
+  for v in "${a[@]}"; do
+    [[ -z $v ]] && continue
+    resolveXuid "$v" | jq -R --arg p "$perm" '{permission:$p,xuid:.}'
   done
-  if [[ -z ${DOWNLOAD_URL} ]]; then
-    DOWNLOAD_URL=$(curl -s https://mc-bds-helper.vercel.app/api/latest)
-  fi
-
-  if [[ ${DOWNLOAD_URL} =~ http.*/.*-(.*)\.zip ]]; then
-    VERSION=${BASH_REMATCH[1]}
-  elif [[ $(ls -rv bedrock_server-* 2> /dev/null|head -1) =~ bedrock_server-(.*) ]]; then
-    VERSION=${BASH_REMATCH[1]}
-    echo "WARN Minecraft download page failed, so using existing download of $VERSION"
-    cat restify.err
-  else
-    if [[ -f restify.err ]]; then
-      echo "Failed to extract download URL '${DOWNLOAD_URL}' from ${downloadPage}"
-      cat restify.err
-      rm restify.err
-    else
-      echo "Failed to lookup download URL: ${DOWNLOAD_URL}"
-    fi
-    exit 2
-  fi
-  rm -f restify.err
 }
 
-if [[ ${DEBUG^^} = TRUE ]]; then
+function replaceVersionInUrl() {
+  local original_url="${1?}"
+  local new_version="${2?}"
+
+  # Use sed to replace the version number in the URL
+  local modified_url
+  modified_url=$(echo "$original_url" | sed -E "s/(bedrock-server-)[^/]+(\.zip)/\1${new_version}\2/")
+
+  echo "$modified_url"
+}
+
+function versionFromExisting() {
+  # shellcheck disable=SC2012
+  # since find doesn't support sort by version numbers, -v
+  if [[ $(ls -rv bedrock_server-* 2> /dev/null|head -1) =~ bedrock_server-(.*) ]]; then
+    VERSION=${BASH_REMATCH[1]}
+    return 0
+  elif ls bedrock_server 2> /dev/null; then
+    VERSION=none
+    return 0
+  else
+    return 1
+  fi
+}
+
+function lookupDownloadUrl() {
+    platform=${1:?Missing required platform indicator}
+
+    if isTrue "$USE_MINECRAFT_SERVICES"; then
+      if downloadUrl=$(lookupDownloadUrlFromMinecraftServices "$platform"); then
+        echo "$downloadUrl"
+        return 0
+      else
+        logWarn "Failed to lookup download URL from Minecraft Services, falling back to processed links"
+      fi
+    fi
+
+    # Map entry script platform arguments to the tracker's top-level keys
+    if [[ "$platform" == "serverBedrockPreviewLinux" ]]; then
+        local type="preview"
+    else
+        local type="release"
+    fi
+
+    if downloadUrl=$(curl "${debugCurlArgs[@]}" -fsSL "${PROCESSED_DOWNLOAD_LINKS_URL}" | \
+        jq --arg type "$type" -r '
+            .[$type]
+            | to_entries
+            | sort_by(.key | split(".") | map(tonumber))
+            | last
+            | .value.linux.url // empty
+        ' 2>/dev/null
+    ); then
+        if [[ -n "$downloadUrl" && "$downloadUrl" != "null" ]]; then
+            echo "$downloadUrl"
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
+function lookupDownloadUrlFromMinecraftServices() {
+    platform=${1:?Missing required platform indicator}
+
+    # shellcheck disable=SC2034
+  for url in "$DOWNLOAD_LINKS_URL" "$DOWNLOAD_SECONDARY_LINKS_URL"; do
+      if downloadUrl=$(
+          curl "${debugCurlArgs[@]}" -fsSL "${url}" |
+            jq --arg platform "$platform" -rR '
+              try(fromjson) catch({}) |
+              .result.links // halt_error(1) |
+                map(
+                  select(.downloadType == $platform)
+                ) |
+                if length > 0 then
+                  first |
+                  .downloadUrl
+                else
+                  (
+                    "Error: could not find platform (\($platform))\n" |
+                    stderr |
+                    "" |
+                    halt_error(2)
+                  )
+                end
+              '
+        ); then
+          echo "$downloadUrl"
+          return 0
+        fi
+    done
+
+    return 1
+}
+
+function extractVersionFromUrl() {
+  url=${1:?missing url}
+    # shellcheck disable=SC2012
+    if [[ ${url} =~ http.*/.*-(.*)\.zip ]]; then
+      echo ${BASH_REMATCH[1]}
+      return 0
+    elif versionFromExisting; then
+      logWarn "Minecraft download page failed, so using existing download of $VERSION"
+      echo $VERSION
+      return 0
+    else
+      logError "Failed to derive version from download URL: ${DOWNLOAD_URL}"
+      return 1
+    fi
+}
+
+echo "Image info: $(paste -d, -s /etc/image.properties)"
+
+debugCurlArgs=()
+if [[ ${DEBUG^^} == TRUE ]]; then
   set -x
-  curlArgs=(-v)
+  debugCurlArgs+=(-v)
   echo "DEBUG: running as $(id -a) with $(ls -ld /data)"
   echo "       current directory is $(pwd)"
 fi
 
-downloadPage=https://www.minecraft.net/en-us/download/server/bedrock
+export HOME="${PWD}"
+export TMPDIR="${HOME}/.tmp"
+mkdir -p "${TMPDIR}"
 
 if [[ ${EULA^^} != TRUE ]]; then
   echo
@@ -69,128 +191,329 @@ if [[ ${EULA^^} != TRUE ]]; then
   exit 1
 fi
 
-case ${VERSION^^} in
-  1.12)
-    VERSION=1.12.0.28
-    ;;
-  1.13)
-    VERSION=1.13.0.34
-    ;;
-  1.14)
-    VERSION=1.14.60.5
-    ;;
-  1.16)
-    VERSION=1.16.20.03
-    ;;
-  1.17)
-    VERSION=1.17.41.01
-    ;;
-  1.17.41)
-    VERSION=1.17.41.01
-    ;;
-  1.18|PREVIOUS)
-    VERSION=1.18.33.02
-    ;;
-  PREVIEW)
-    echo "Looking up latest preview version..."
-    lookupVersion serverBedrockPreviewLinux
-    ;;
-  LATEST)
-    echo "Looking up latest version..."
-    lookupVersion serverBedrockLinux
-    ;;
-  *)
-    # use the given version exactly
-    ;;
-esac
-
-if [ ! -f "bedrock_server-${VERSION}" ]; then
-
-  if [[ ! ${DOWNLOAD_URL} ]]; then
-    binPath=bin-linux
-    if isTrue "${PREVIEW}"; then
-      binPath=bin-linux-preview
+# Check for DIRECT_DOWNLOAD_URL override first
+if [[ -n "${DIRECT_DOWNLOAD_URL}" ]]; then
+  echo "Using direct download URL from DIRECT_DOWNLOAD_URL environment variable."
+  DOWNLOAD_URL="${DIRECT_DOWNLOAD_URL}"
+  # If VERSION is not explicitly set, try to extract it from the URL
+  if [[ -z "${VERSION}" ]]; then
+    if [[ "${DOWNLOAD_URL}" =~ bedrock-server-([0-9\.]+)\.zip ]]; then
+      VERSION=${BASH_REMATCH[1]}
+      echo "Extracted VERSION=${VERSION} from DIRECT_DOWNLOAD_URL."
+    else
+      echo "WARNING: Could not extract VERSION from DIRECT_DOWNLOAD_URL. Please ensure VERSION environment variable is set."
+      # Optionally exit here if VERSION is strictly required, but for testing, often the test will fail later.
     fi
-    DOWNLOAD_URL="https://minecraft.azureedge.net/${binPath}/bedrock-server-${VERSION}.zip"
+  else
+    echo "VERSION=${VERSION} is explicitly set, using it with DIRECT_DOWNLOAD_URL."
   fi
+else # Original logic: if DIRECT_DOWNLOAD_URL is NOT set, proceed with lookup
+  case ${VERSION^^} in
+    PREVIEW)
+      echo "Looking up latest preview version..."
+      if ! DOWNLOAD_URL=$(lookupDownloadUrl serverBedrockPreviewLinux); then
+          logError " failed to lookup download URL"
+          exit 1
+      fi
+      VERSION=$(extractVersionFromUrl "$DOWNLOAD_URL")
+      ;;
+    LATEST)
+      echo "Looking up latest version..."
+      if ! DOWNLOAD_URL=$(lookupDownloadUrl serverBedrockLinux); then
+          logError "failed to lookup download URL"
+          exit 1
+      fi
+      VERSION=$(extractVersionFromUrl "$DOWNLOAD_URL")
+      ;;
+    EXISTING)
+      if versionFromExisting; then
+        echo "Using existing bedrock server executable"
+      else
+        logError " unable to locate existing bedrock server executable"
+        exit 1
+      fi
+      ;;
+    *)
+      if isTrue "$PREVIEW"; then
+        echo "Using given preview version ${VERSION}"
+        if ! DOWNLOAD_URL=$(lookupDownloadUrl serverBedrockPreviewLinux); then
+            logError " failed to lookup Bedrock version and download URL"
+            exit 1
+        fi
+        DOWNLOAD_URL=$(replaceVersionInUrl "${DOWNLOAD_URL}" "${VERSION}")
+      else
+        echo "Using given version ${VERSION}"
+        if ! DOWNLOAD_URL=$(lookupDownloadUrl serverBedrockLinux); then
+            logError " failed to lookup Bedrock version and download URL"
+            exit 1
+        fi
+        DOWNLOAD_URL=$(replaceVersionInUrl "${DOWNLOAD_URL}" "${VERSION}")
+      fi
+      ;;
+  esac
+fi
 
-  [[ $TMP_DIR != /tmp ]] && mkdir -p "$TMP_DIR"
-  TMP_ZIP="$TMP_DIR/$(basename "${DOWNLOAD_URL}")"
+if [[ $VERSION = none ]]; then
+  SERVER=bedrock_server
+else
+  SERVER="bedrock_server-${VERSION}"
+fi
+
+if [[ ! -f "$SERVER" ]]; then
+
+  [[ $DOWNLOAD_DIR != /tmp ]] && mkdir -p "$DOWNLOAD_DIR"
+  TMP_ZIP="$DOWNLOAD_DIR/$(basename "${DOWNLOAD_URL}")"
 
   echo "Downloading Bedrock server version ${VERSION} ..."
-  if ! curl "${curlArgs[@]}" -o "${TMP_ZIP}" -fsSL ${DOWNLOAD_URL}; then
-    echo "ERROR failed to download from ${DOWNLOAD_URL}"
-    echo "      Double check that the given VERSION is valid"
+  curlProgressArgs=(-fsSL)
+  if isTrue "$DOWNLOAD_PROGRESS"; then
+    curlProgressArgs=(-fL --progress-bar)
+  fi
+  if ! curl "${debugCurlArgs[@]}" "${curlProgressArgs[@]}" -o "${TMP_ZIP}" -A "itzg/minecraft-bedrock-server" "${DOWNLOAD_URL}"; then
+    logError " failed to download from ${DOWNLOAD_URL}
+          Double check that the given VERSION is valid"
     exit 2
   fi
 
   # remove only binaries and some docs, to allow for an upgrade of those
-  rm -rf bedrock_server bedrock_server-* *.so release-notes.txt bedrock_server_how_to.html valid_known_packs.json premium_cache 2> /dev/null
+  rm -rf -- bedrock_server bedrock_server-* *.so release-notes.txt bedrock_server_how_to.html valid_known_packs.json premium_cache 2> /dev/null
 
   bkupDir=backup-pre-${VERSION}
   # fixup any previous interrupted upgrades
   rm -rf "${bkupDir}"
-  for d in behavior_packs definitions minecraftpe resource_packs structures treatments world_templates
-  do
-    if [ -d $d ]; then
-      mkdir -p $bkupDir
+  for d in behavior_packs definitions minecraftpe resource_packs structures treatments world_templates; do
+    if [[ -d $d && -n "$(ls $d)" ]]; then
+      mkdir -p "${bkupDir}/$d"
       echo "Backing up $d into $bkupDir"
-      mv $d $bkupDir
+      if [[ "$d" == "resource_packs" ]]; then
+        # Copy over resource packs to ensure user-supplied ones remain
+        cp -a $d/* "${bkupDir}/$d/"
+
+        # ...however, need to fully remove Mojang provided resource packs to ensure consistent content
+        for rp_dir in chemistry vanilla editor; do
+          if [[ -d "$d/$rp_dir" ]]; then
+            # shellcheck disable=SC2115
+            rm -rf "$d/$rp_dir"
+          fi
+        done
+      elif [[ "$d" == "behavior_packs" ]]; then
+        # remove Mojang provided ones
+        find behavior_packs \( -name 'vanilla*' -o -name 'chemistry*' -o -name 'experimental*' \) -exec rm -rf {} +
+      else
+        mv $d "${bkupDir}/"
+      fi
     fi
   done
 
   # remove old package backups, but keep PACKAGE_BACKUP_KEEP
   if (( ${PACKAGE_BACKUP_KEEP:=2} >= 0 )); then
     shopt -s nullglob
+    # shellcheck disable=SC2012
     for d in $( ls -td1 backup-pre-* | tail +$(( PACKAGE_BACKUP_KEEP + 1 )) ); do
-      echo "Pruning $d"
-      rm -rf $d
+      echo "Pruning backup directory: $d"
+      rm -rf "$d"
     done
   fi
 
   # Do not overwrite existing files, which means the cleanup above needs to account for things
   # that MUST be replaced on upgrade
-  unzip -q -n ${TMP_ZIP}
-  [[ $TMP_DIR != /tmp ]] && rm -rf "$TMP_DIR"
+  unzip -q -n "${TMP_ZIP}"
+  [[ $DOWNLOAD_DIR != /tmp ]] && rm -rf "$DOWNLOAD_DIR"
 
   chmod +x bedrock_server
-  mv bedrock_server bedrock_server-${VERSION}
+  mv bedrock_server "$SERVER"
 fi
 
-if [ -n "$OPS" ] || [ -n "$MEMBERS" ] || [ -n "$VISITORS" ]; then
+if [[ -n "${MC_PACK:-}" ]]; then
+  finallyShopt="$(shopt -p nullglob || true)"
+  shopt -s nullglob
+  if [[ -d "$MC_PACK" ]]; then
+    srcDir="$MC_PACK"
+    cleanupTmp=
+  elif [[ -f "$MC_PACK" ]]; then
+    srcDir=$(mktemp -d)
+    cleanupTmp=1
+    unzip -q -o "$MC_PACK" -d "$srcDir"
+  else
+    logWarn "MC_PACK is set but path does not exist or is not a file/directory: $MC_PACK"
+    srcDir=
+  fi
+  if [[ -n "$srcDir" ]]; then
+    if [[ ! -d "$srcDir/behavior_packs" && ! -d "$srcDir/resource_packs" ]] && \
+        [[ -f "$srcDir/data/manifest.json" || -f "$srcDir/resources/manifest.json" ]]; then
+        for subdir in data resources; do
+            packManifestFile="$srcDir/$subdir/manifest.json"
+            if [[ ! -f "$packManifestFile" ]]; then
+              continue;
+            fi
+
+            packId=$(jq -r '.header.uuid' "$packManifestFile")
+            destName="behavior_packs"; [[ "$subdir" == "resources" ]] && destName="resource_packs"
+
+            worldPacksFile="$srcDir/world_${destName}.json"
+            worldPacksJson=$(jq -c '[{pack_id: .header.uuid, version: .header.version}]' "$packManifestFile")
+
+            mkdir -p "$srcDir/$destName"
+            mv "$srcDir/$subdir" "$srcDir/$destName/$packId"
+            echo "$worldPacksJson" > "$worldPacksFile" && echo "Generated $worldPacksFile as $worldPacksJson"
+        done
+    fi
+    if [[ -d "$srcDir/addon" ]]; then
+      for addonSub in "$srcDir/addon"/*; do
+        packManifestFile="$addonSub/manifest.json"
+        if [[ ! -f "$packManifestFile" ]]; then
+          logWarn "addon/$(basename "$addonSub"): manifest.json not found; skipping";
+          continue;
+        fi
+        packId=$(jq -r '.header.uuid' "$packManifestFile")
+        packKind=$(jq -r '
+          [ .modules[]?.type ] as $types
+          | if ($types | any(IN("data","script"))) then "behavior_packs"
+            elif ($types | any(. == "resources")) then "resource_packs"
+            else empty
+            end
+        ' "$packManifestFile")
+        if [[ -z "$packId" || "$packId" == "null" || -z "$packKind" ]]; then
+          logWarn "addon/$(basename "$addonSub"): unsupported manifest modules; skipping";
+          continue;
+        fi
+        dest="$srcDir/$packKind/$packId"
+        [[ -d "$dest" ]] && rm -rf "$dest"
+        mkdir -p "$srcDir/$packKind" && mv "$addonSub" "$dest" && echo "Moved addon $(basename "$addonSub") to $packKind/$packId"
+      done
+      rm -rf "$srcDir/addon"
+    fi
+    for dir in behavior_packs resource_packs; do
+      if [[ -d "$srcDir/$dir" ]]; then
+        mkdir -p "$dir"
+        for sub in "$srcDir/$dir"/*; do
+          destSub="$dir/$(basename "$sub")"
+          if isTrue "$FORCE_PACK_COPY" && [[ -d "$destSub" ]]; then
+            logWarn "Removing existing pack at $destSub (FORCE_PACK_COPY=TRUE)"
+            rm -rf "$destSub"
+          fi
+          [[ ! -d "$destSub" ]] && echo "Copying pack $(basename "$sub") to $dir" && cp -a "$sub" "$dir/"
+        done
+      fi
+    done
+    levelDir="worlds/$LEVEL_NAME"
+    if [[ -f "$srcDir/level.dat" ]]; then
+      if isTrue "$FORCE_WORLD_COPY" || [[ ! -f "$levelDir/level.dat" ]]; then
+        if isTrue "$FORCE_WORLD_COPY" && [[ -d "$levelDir" ]]; then
+          logWarn "Removing existing world at $levelDir (FORCE_WORLD_COPY=TRUE)"
+          rm -rf "$levelDir"
+        fi
+        for item in "$srcDir"/*; do
+          name=$(basename "$item")
+          if [[ "$name" == "behavior_packs" || "$name" == "resource_packs" || "$name" == "addon" ]]; then
+            continue;
+          fi
+          mkdir -p "$levelDir"
+          echo "Copying world item $name to $levelDir"
+          cp -a "$item" "$levelDir/"
+        done
+      fi
+    fi
+    [[ -n "$cleanupTmp" ]] && rm -rf "$srcDir"
+  fi
+  eval "$finallyShopt"
+fi
+
+if [[ -n "$OPS" || -n "$MEMBERS" || -n "$VISITORS" ]]; then
   echo "Updating permissions"
-  jq -n --arg ops "$OPS" --arg members "$MEMBERS" --arg visitors "$VISITORS" '[
-  [$ops      | split(",") | map({permission: "operator", xuid:.})],
-  [$members  | split(",") | map({permission: "member", xuid:.})],
-  [$visitors | split(",") | map({permission: "visitor", xuid:.})]
-  ]| flatten' > permissions.json
+  {
+    resolvePermissionXuids "$OPS" operator
+    resolvePermissionXuids "$MEMBERS" member
+    resolvePermissionXuids "$VISITORS" visitor
+  } | jq -s '.' > permissions.json
 fi
 
+if [[ -n "$ALLOW_LIST_USERS" || -n "$WHITE_LIST_USERS" ]]; then
+  allowListUsers=${ALLOW_LIST_USERS:-$WHITE_LIST_USERS}
 
-if [[ -v ALLOW_LIST_USERS || -v WHITE_LIST_USERS ]]; then
-  allowListUsers=${ALLOW_LIST_USERS:-${WHITE_LIST_USERS}}
-
-  WHITE_LIST=false
-  rm -f whitelist.json
-  if [[ $allowListUsers ]]; then
+  if [[ "$allowListUsers" ]]; then
     echo "Setting allow list"
-    jq -c -n --arg users "$allowListUsers" '$users | split(",") | map({"ignoresPlayerLimit":false,"name": .})' > "allowlist.json"
+    if [[ "$allowListUsers" != *":"* ]]; then
+      jq -c -n --arg users "$allowListUsers" '$users | split("[,\\n]+"; "") | map(select(length>0) | {"ignoresPlayerLimit":false,"name": .})' > "allowlist.json"
+    else
+      jq -c -n --arg users "$allowListUsers" '$users | split("[,\\n]+"; "") | map(select(length>0) | split(":") | {"ignoresPlayerLimit":false,"name": .[0], "xuid": .[1]})' > "allowlist.json"
+    fi
     # activate server property to enable list usage
     ALLOW_LIST=true
   else
-    rm -rf allowlist.json
     ALLOW_LIST=false
+    rm -f allowlist.json
   fi
-  export WHITE_LIST ALLOW_LIST
+fi
+
+if [[ "$SERVER_UDP_PORTS" == *"<public_ip>"* ]]; then
+  echo "Replacing <public_ip> in $SERVER_UDP_PORTS"
+  public_ip=$(curl -s ifconfig.me)
+  echo "Public IP resolved to: $public_ip"
+  SERVER_UDP_PORTS="${SERVER_UDP_PORTS//<public_ip>/$public_ip}"
+  export SERVER_UDP_PORTS
+fi
+
+if [[ -n "$VARIABLES" ]]; then
+  echo "Setting variables"
+  mkdir -p config/default
+
+  # Try to parse VARIABLES as JSON
+  if echo "$VARIABLES" | jq empty >/dev/null 2>&1; then
+    # VARIABLES is valid JSON
+    echo "$VARIABLES" | jq '.' > "config/default/variables.json"
+  else
+    # VARIABLES is not valid JSON, attempt to parse as custom format
+    echo "VARIABLES is not valid JSON, attempting to parse as custom format"
+
+    # Parse the VARIABLES using custom format (key:value,key:value)
+    # Note: Values should not contain unescaped commas or colons
+    jq -n --arg vars "$VARIABLES" '
+      $vars
+      | split("[,\\n]+"; "")
+      | map(
+          select(length>0) |
+          split("=") as $kv |
+          { ($kv[0]): ($kv[1] | fromjson? // $kv[1]) }
+        )
+      | add
+    ' > "config/default/variables.json"
+  fi
 fi
 
 mc-image-helper set-properties --definitions /etc/bds-property-definitions.json server.properties
 
 export LD_LIBRARY_PATH=.
 
+: "${ENABLE_BDS_V6BIND_FIX:=false}"
+if isTrue "${ENABLE_BDS_V6BIND_FIX}"; then
+  if [[ -f /opt/bds-ipv6fix.so ]]; then
+    export LD_PRELOAD=/opt/bds-ipv6fix.so
+  else
+    echo "WARNING: ENABLE_BDS_V6BIND_FIX=true but bds-ipv6fix.so is not available for this platform"
+  fi
+fi
+
+mcServerRunnerArgs=()
+if isTrue "${ENABLE_SSH}"; then
+  mcServerRunnerArgs+=(--remote-console)
+  if [[ -v REMOTE_CONSOLE_BIND_ADDRESS ]]; then
+    mcServerRunnerArgs+=(--remote-console-bind-address "${REMOTE_CONSOLE_BIND_ADDRESS}")
+  fi
+  if ! [[ -v RCON_PASSWORD ]]; then
+    RCON_PASSWORD=$(openssl rand -hex 12)
+    export RCON_PASSWORD
+  fi
+
+  # For ssh access by tools, export the current password.
+  # Use rcon's format to align with Java, as Java uses the rcon password for SSH as well.
+  echo "password=${RCON_PASSWORD}" > "$HOME/.remote-console.env"
+  echo "password: \"${RCON_PASSWORD}\"" > "$HOME/.remote-console.yaml"
+fi
+
 echo "Starting Bedrock server..."
-if [ -f /usr/local/bin/box64 ] ; then
-    exec box64 ./bedrock_server-${VERSION}
+if [[ -f /usr/local/bin/box64 ]] && isTrue "${USE_BOX64}" ; then
+    exec mc-server-runner "${mcServerRunnerArgs[@]}" box64 ./"$SERVER"
 else
-    exec ./bedrock_server-${VERSION}
+    exec mc-server-runner "${mcServerRunnerArgs[@]}" ./"$SERVER"
 fi

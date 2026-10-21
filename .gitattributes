@@ -1,0 +1,13 @@
+* text=auto
+
+*.sh    text eol=lf
+*.c     text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.ps1   text eol=crlf
+
+build/install-packages  text eol=lf
+build/setup-arm64       text eol=lf
+bin/*                   text eol=lf
