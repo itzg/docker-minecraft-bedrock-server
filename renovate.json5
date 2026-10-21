@@ -12,5 +12,12 @@
       ]
     }
   ],
+  "packageRules": [
+    {
+      "matchManagers": ["custom.regex"],
+      "matchUpdateTypes": ["patch"],
+      "groupName": "Dockerfile patch updates"
+    }
+  ],
   "labels": ["dependencies"]
 }
