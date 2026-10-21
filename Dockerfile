@@ -28,7 +28,7 @@ ARG APPS_REV=1
 ARG GITHUB_BASEURL=https://github.com
 
 # renovate: datasource=github-releases packageName=itzg/easy-add
-ARG EASY_ADD_VERSION=0.8.17
+ARG EASY_ADD_VERSION=0.8.19
 ADD --chmod=755 ${GITHUB_BASEURL}/itzg/easy-add/releases/download/${EASY_ADD_VERSION}/easy-add_${TARGETOS}_${TARGETARCH}${TARGETVARIANT} /usr/bin/easy-add
 
 # renovate: datasource=github-releases packageName=itzg/entrypoint-demoter
@@ -46,7 +46,7 @@ RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
 
 # renovate: datasource=github-releases packageName=itzg/mc-server-runner
-ARG MC_SERVER_RUNNER_VERSION=1.16.1
+ARG MC_SERVER_RUNNER_VERSION=1.16.2
 RUN easy-add --var os=${TARGETOS} --var arch=${TARGETARCH}${TARGETVARIANT} \
   --var version=${MC_SERVER_RUNNER_VERSION} --var app=mc-server-runner --file {{.app}} \
   --from ${GITHUB_BASEURL}/itzg/{{.app}}/releases/download/{{.version}}/{{.app}}_{{.version}}_{{.os}}_{{.arch}}.tar.gz
