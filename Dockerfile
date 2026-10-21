@@ -28,7 +28,7 @@ ARG APPS_REV=1
 ARG GITHUB_BASEURL=https://github.com
 
 # renovate: datasource=github-releases packageName=itzg/easy-add
-ARG EASY_ADD_VERSION=0.8.17
+ARG EASY_ADD_VERSION=0.8.19
 ADD --chmod=755 ${GITHUB_BASEURL}/itzg/easy-add/releases/download/${EASY_ADD_VERSION}/easy-add_${TARGETOS}_${TARGETARCH}${TARGETVARIANT} /usr/bin/easy-add
 
 # renovate: datasource=github-releases packageName=itzg/entrypoint-demoter
