@@ -38,10 +38,10 @@ function resolveXuid() {
     echo "$value"
     return
   fi
-  
+
   local encoded=$(jq -sRr @uri <<< "$value")
   local xuid=$(curl "${debugCurlArgs[@]}" -fsSL -A "itzg/minecraft-bedrock-server" "$RESOLVE_XUID_API_URL/$encoded" 2>/dev/null | jq -r '.xuid // empty')
-  
+
   echo "${xuid:-$value}"
 }
 
@@ -120,7 +120,8 @@ function lookupDownloadUrl() {
 function lookupDownloadUrlFromMinecraftServices() {
     platform=${1:?Missing required platform indicator}
 
-    for url in "$DOWNLOAD_LINKS_URL" "$DOWNLOAD_SECONDARY_LINKS_URL"; do
+    # shellcheck disable=SC2034
+  for url in "$DOWNLOAD_LINKS_URL" "$DOWNLOAD_SECONDARY_LINKS_URL"; do
       if downloadUrl=$(
           curl "${debugCurlArgs[@]}" -fsSL "${url}" |
             jq --arg platform "$platform" -rR '
@@ -480,16 +481,7 @@ if [[ -n "$VARIABLES" ]]; then
   fi
 fi
 
-
-if [ -f server.properties ]; then
-  # prevent issue with bind mounted server.properties which can not be moved (sed tries to move the file when '-i' is used)
-  _SERVER_PROPERTIES=$(sed '/^white-list=.*/d' server.properties) #Removes white-list= line from server.properties
-  echo "${_SERVER_PROPERTIES}" > server.properties
-fi
-export ALLOW_LIST
-
-# update server.properties with environment settings
-set-property --file server.properties --bulk /etc/bds-property-definitions.json
+mc-image-helper set-properties --definitions /etc/bds-property-definitions.json server.properties
 
 export LD_LIBRARY_PATH=.
 
