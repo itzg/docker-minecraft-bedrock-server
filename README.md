@@ -237,9 +237,8 @@ BDS 1.26.51 logs an error that NetherNet is the only supported transport.
 
 ## IPv6 same-port fix
 
-> **NOTE**: This fix applies only to `TRANSPORT=raknet`. Do not use it with NetherNet.
-> The shim changes each IPv6 socket that binds to `SERVER_PORT_V6`, which includes the NetherNet TCP socket.
-> If `SERVER_PORT_V6` is equal to `SERVER_PORT`, the TCP socket becomes IPv6-only, and IPv4 clients cannot connect.
+> **NOTE**: This fix is only needed with the legacy `TRANSPORT=raknet`. With NetherNet the shim is inert:
+> it acts on UDP sockets only and leaves the NetherNet TCP socket untouched, so it can stay enabled.
 
 BDS binds IPv4 and IPv6 on separate ports by default (19132 and 19133).
 Bedrock clients do not implement Happy Eyeballs, so a player whose device
