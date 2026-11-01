@@ -37,9 +37,7 @@
     "allowed": ["true", "false"]
   },
   "white-list": {
-    "env": "WHITE_LIST",
-    "allowed": ["true", "false"],
-    "deprecated": "This property is deprecated. Use 'allow-list' instead."
+    "remove": true
   },
   "allow-list": {
     "env": "ALLOW_LIST",
