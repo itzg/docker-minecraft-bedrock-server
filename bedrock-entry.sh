@@ -21,13 +21,18 @@ function isTrue() {
   return 1
 }
 
+function logInfo() {
+  msg="${1?}"
+  echo "INFO $msg"
+}
+
 function logWarn() {
-  msg=${1?}
+  msg="${1?}"
   echo "WARN $msg" >&2
 }
 
 function logError() {
-  msg=${1?}
+  msg="${1?}"
   echo "ERROR $msg" >&2
 }
 
@@ -165,6 +170,102 @@ function extractVersionFromUrl() {
       return 1
     fi
 }
+
+function isIPv6() {
+  ip=${1:?}
+  if [[ $ip =~ ^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$ ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+function formatIpPart() {
+    ip=${1:?}
+    if isIPv6 "$ip"; then
+        echo "[$ip]"
+    else
+        echo "$ip"
+    fi
+}
+
+## @param placeholder The placeholder to replace (e.g., <public_ip>, <public_ipv4>, <public_ipv6>)
+## @param publicIp The public IP address to replace the placeholder with. If empty, which will be the case if ipify is unable to resolve the requested address, the function will log an error and exit.
+function replaceIpPlaceholder() {
+  local placeholder="${1:?}"
+  local publicIp="$2"
+
+  if [[ -z "$publicIp" ]]; then
+    logError "Unable to resolve public IP for ${placeholder}"
+    exit 1
+  fi
+
+  logInfo "Replacing ${placeholder} with ${publicIp} in SERVER_UDP_PORTS"
+
+  SERVER_UDP_PORTS="${SERVER_UDP_PORTS//${placeholder}/$(formatIpPart "$publicIp")}"
+  export SERVER_UDP_PORTS
+}
+
+## Evaluates the SERVER_UDP_PORTS environment variable and replaces the following placeholders:
+## - <public_ip> with the public IP address (IPv4 or IPv6) of the server
+## - <public_ipv4> with the public IPv4 address of the server
+## - <public_ipv6> with the public IPv6 address of the server
+## If one of the specific placeholders does not resolve, then the startup will exit
+function manageServerUdpPorts() {
+  if [[ "$SERVER_UDP_PORTS" == *"<public_ip>"* ]]; then
+    replaceIpPlaceholder "<public_ip>" "$(curl -s https://api64.ipify.org)"
+  elif [[ "$SERVER_UDP_PORTS" == *"<public_ipv4>"* ]]; then
+    replaceIpPlaceholder "<public_ipv4>" "$(curl -s https://api.ipify.org)"
+  elif [[ "$SERVER_UDP_PORTS" == *"<public_ipv6>"* ]]; then
+    replaceIpPlaceholder "<public_ipv6>" "$(curl -s https://api6.ipify.org)"
+  fi
+}
+
+function manageProperties() {
+  manageServerUdpPorts
+
+  if [[ -n "$VARIABLES" ]]; then
+    echo "Setting variables"
+    mkdir -p config/default
+
+    # Try to parse VARIABLES as JSON
+    if echo "$VARIABLES" | jq empty >/dev/null 2>&1; then
+      # VARIABLES is valid JSON
+      echo "$VARIABLES" | jq '.' > "config/default/variables.json"
+    else
+      # VARIABLES is not valid JSON, attempt to parse as custom format
+      echo "VARIABLES is not valid JSON, attempting to parse as custom format"
+
+      # Parse the VARIABLES using custom format (key:value,key:value)
+      # Note: Values should not contain unescaped commas or colons
+      jq -n --arg vars "$VARIABLES" '
+        $vars
+        | split("[,\\n]+"; "")
+        | map(
+            select(length>0) |
+            split("=") as $kv |
+            { ($kv[0]): ($kv[1] | fromjson? // $kv[1]) }
+          )
+        | add
+      ' > "config/default/variables.json"
+    fi
+  fi
+
+
+  if [ -f server.properties ]; then
+    # prevent issue with bind mounted server.properties which can not be moved (sed tries to move the file when '-i' is used)
+    _SERVER_PROPERTIES=$(sed '/^white-list=.*/d' server.properties) #Removes white-list= line from server.properties
+    echo "${_SERVER_PROPERTIES}" > server.properties
+  fi
+  export ALLOW_LIST
+
+  # update server.properties with environment settings
+  set-property --file server.properties --bulk /etc/bds-property-definitions.json
+}
+
+#######################################################################################################################
+# MAIN
+#######################################################################################################################
 
 echo "Image info: $(paste -d, -s /etc/image.properties)"
 
@@ -445,51 +546,7 @@ if [[ -n "$ALLOW_LIST_USERS" || -n "$WHITE_LIST_USERS" ]]; then
   fi
 fi
 
-if [[ "$SERVER_UDP_PORTS" == *"<public_ip>"* ]]; then
-  echo "Replacing <public_ip> in $SERVER_UDP_PORTS"
-  public_ip=$(curl -s ifconfig.me)
-  echo "Public IP resolved to: $public_ip"
-  SERVER_UDP_PORTS="${SERVER_UDP_PORTS//<public_ip>/$public_ip}"
-  export SERVER_UDP_PORTS
-fi
-
-if [[ -n "$VARIABLES" ]]; then
-  echo "Setting variables"
-  mkdir -p config/default
-
-  # Try to parse VARIABLES as JSON
-  if echo "$VARIABLES" | jq empty >/dev/null 2>&1; then
-    # VARIABLES is valid JSON
-    echo "$VARIABLES" | jq '.' > "config/default/variables.json"
-  else
-    # VARIABLES is not valid JSON, attempt to parse as custom format
-    echo "VARIABLES is not valid JSON, attempting to parse as custom format"
-
-    # Parse the VARIABLES using custom format (key:value,key:value)
-    # Note: Values should not contain unescaped commas or colons
-    jq -n --arg vars "$VARIABLES" '
-      $vars
-      | split("[,\\n]+"; "")
-      | map(
-          select(length>0) |
-          split("=") as $kv |
-          { ($kv[0]): ($kv[1] | fromjson? // $kv[1]) }
-        )
-      | add
-    ' > "config/default/variables.json"
-  fi
-fi
-
-
-if [ -f server.properties ]; then
-  # prevent issue with bind mounted server.properties which can not be moved (sed tries to move the file when '-i' is used)
-  _SERVER_PROPERTIES=$(sed '/^white-list=.*/d' server.properties) #Removes white-list= line from server.properties
-  echo "${_SERVER_PROPERTIES}" > server.properties
-fi
-export ALLOW_LIST
-
-# update server.properties with environment settings
-set-property --file server.properties --bulk /etc/bds-property-definitions.json
+manageProperties
 
 export LD_LIBRARY_PATH=.
 

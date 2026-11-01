@@ -194,11 +194,39 @@ During the handshake, BDS sends the client a list of addresses and UDP ports. Th
 - IMPORTANT: to access over the internet you need to use the public ip in the `SERVER_UDP_PORTS`, and forward all the ports.
 
 Use an IPv4 or IPv6 literal, not a hostname.
-To use the public IP address of the host, use the literal string `<public_ip>`. At startup, the image replaces it with the result of `curl ifconfig.me`.
 
 Use a range with at least one port for each player (`max-players`, default 10).
 Publish the TCP port and the full UDP range.
 For an example, see [examples/nethernet/compose.yml](examples/nethernet/compose.yml).
+
+### Using placeholder for public IP
+
+Use one of the following placeholders in `SERVER_UDP_PORTS` to have the container resolve your public IP at startup using https://www.ipify.org/:
+- `<public_ip>` : resolves to either IPv4 or IPv6, whichever is resolved by the universal lookup 
+- `<public_ipv4>` : resolves to IPv4 only
+- `<public_ipv6>` : resolves to IPv6 only
+
+### From Mojang's docs regarding SERVER_UDP_PORTS
+
+```
+Configures UDP client transport ports.
+This property is ignored when `transport=raknet`.
+If not set, UDP ports are allocated from the operating system's ephemeral port range.
+Two modes are supported:
+  1. Single UDP port shared by all clients.
+  2. UDP port range, where client connections are distributed across a range of ports but will reuse ports if the range is exhausted.
+Both modes support either the same local and public port values or a public:local mapping. Ranges on each side of `:` must be the same length.
+Optionally, specify the public IP address using IP:public:local (IPv4) or [IPv6]:public:local (IPv6).
+Both port values are required with an IP prefix, even when they are the same.
+Examples:
+  server-udp-ports=19489                   (Single UDP port shared by all clients, local and public values are the same)
+  server-udp-ports=29489:19489             (Single UDP port shared by all clients, public port:29489 must map to local port:19489)
+  server-udp-ports=19400-19500             (UDP port range, local and public values are the same)
+  server-udp-ports=21200-21300:19400-19500 (UDP port range, public port range: 21200-21300 must map to local port range: 19400-19500)
+  server-udp-ports=12.19.20.18:19489:19489 (Single UDP port with public IP, 12.19.20.18:19489 must map to the server's local UDP port 19489)
+  server-udp-ports=[2001:db8::2021:26:03]:21200-21300:19400-19500
+                                           (UDP port range with public IP, [2001:db8::2021:26:03]:21200-21300 must map to the server's local UDP ports 19400-19500)
+```
 
 ### Firewall
 
