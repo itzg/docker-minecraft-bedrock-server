@@ -524,6 +524,15 @@ You can follow the logs at any time using:
 docker compose logs -f
 ```
 
+## Deploying with Easypanel
+
+[Easypanel](https://easypanel.io) is a self-hosted Docker deployment platform, and this image has a one-click deployment template there (Minecraft Bedrock Server):
+
+[![Deploy on Easypanel][easypanel-btn]][easypanel-deploy]
+
+[easypanel-btn]: https://easypanel.io/img/deploy-on-easypanel-40.svg
+[easypanel-deploy]: https://easypanel.io/templates/minecraft-server-bedrock
+
 ## Deploying with Kubernetes
 
 The [examples](examples) directory contains [an example Kubernetes manifest file](examples/kubernetes.yml) that declares:
