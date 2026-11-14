@@ -576,6 +576,32 @@ if isTrue "${ENABLE_SSH}"; then
   echo "password: \"${RCON_PASSWORD}\"" > "$HOME/.remote-console.yaml"
 fi
 
+# Workaround for https://bugs.mojang.com/browse/BDS-23133, see #709.
+# BDS binds its NetherNet TCP listener without SO_REUSEADDR and keeps
+# running when that bind fails. With network_mode: host, connections
+# left behind by a previous server hold the port for up to two minutes,
+# and a server started in that window never accepts clients.
+# Remove this block once BDS-23133 is fixed.
+if [[ $SERVER_PORT =~ ^[0-9]+$ ]]; then
+  port_hex=$(printf '%04X' "$((10#$SERVER_PORT))")
+  port_re="^ *[0-9]+: [0-9A-F]+:${port_hex} "
+  if grep -qE "${port_re}[0-9A-F]+:[0-9A-F]+ 0A " /proc/net/tcp /proc/net/tcp6 2>/dev/null; then
+    logError "TCP port $SERVER_PORT is in use by another process"
+    exit 1
+  fi
+  waited=0
+  while grep -qE "$port_re" /proc/net/tcp /proc/net/tcp6 2>/dev/null; do
+    if ((waited == 0)); then
+      echo "Waiting for TCP port $SERVER_PORT to be released by a previous server..."
+    elif ((waited >= 118)); then
+      logError "TCP port $SERVER_PORT is still in use after $waited seconds"
+      exit 1
+    fi
+    sleep 2
+    waited=$((waited + 2))
+  done
+fi
+
 echo "Starting Bedrock server..."
 if [[ -f /usr/local/bin/box64 ]] && isTrue "${USE_BOX64}" ; then
     exec mc-server-runner "${mcServerRunnerArgs[@]}" box64 ./"$SERVER"
