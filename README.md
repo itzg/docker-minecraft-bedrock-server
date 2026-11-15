@@ -49,6 +49,7 @@ For Minecraft Java Edition you'll need to use this image instead:
   bedrock server process
 - `TZ` (no default): can be set to a specific timezone like `America/New_York`. This will set the timezone for the Docker container and therefore their logs. Addtionally, if you want to sync the time with the host, you can mount the `/etc/localtime` file from the host to the container like `/etc/localtime:/etc/localtime:ro`.
 - `PACKAGE_BACKUP_KEEP` (`2`) : how many package backups to keep
+- `ENABLE_SSH`
 
 ### Server Properties
 
@@ -56,7 +57,6 @@ The following environment variables will set the equivalent property in `server.
 Typically, each property is configured instead by the UPPER_SNAKE_CASE equivalent. 
 
 - `SERVER_NAME`
-- `ENABLE_SSH`
 - `GAMEMODE`
 - `FORCE_GAMEMODE`
 - `DIFFICULTY`
