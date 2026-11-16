@@ -261,7 +261,7 @@ function manageProperties() {
   export ALLOW_LIST
 
   # update server.properties with environment settings
-  set-property --file server.properties --bulk /etc/bds-property-definitions.json
+  mc-image-helper set-properties --definitions /etc/bds-property-definitions.json server.properties
 }
 
 #######################################################################################################################
