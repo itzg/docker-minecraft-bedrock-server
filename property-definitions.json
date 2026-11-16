@@ -52,7 +52,8 @@
     "env": "SERVER_PORT_V6"
   },
   "server-ip": {
-    "env": "SERVER_IP"
+    "env": "SERVER_IP",
+    "fallback": ""
   },
   "server-udp-ports": {
     "env": "SERVER_UDP_PORTS"
