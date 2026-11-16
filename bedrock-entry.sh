@@ -548,17 +548,6 @@ fi
 
 manageProperties
 
-export LD_LIBRARY_PATH=.
-
-: "${ENABLE_BDS_V6BIND_FIX:=false}"
-if isTrue "${ENABLE_BDS_V6BIND_FIX}"; then
-  if [[ -f /opt/bds-ipv6fix.so ]]; then
-    export LD_PRELOAD=/opt/bds-ipv6fix.so
-  else
-    echo "WARNING: ENABLE_BDS_V6BIND_FIX=true but bds-ipv6fix.so is not available for this platform"
-  fi
-fi
-
 mcServerRunnerArgs=()
 if isTrue "${ENABLE_SSH}"; then
   mcServerRunnerArgs+=(--remote-console)
@@ -596,6 +585,17 @@ if [[ $SERVER_PORT =~ ^[0-9]+$ ]]; then
     fi
     sleep 2
   done
+fi
+
+export LD_LIBRARY_PATH=.
+
+: "${ENABLE_BDS_V6BIND_FIX:=false}"
+if isTrue "${ENABLE_BDS_V6BIND_FIX}"; then
+  if [[ -f /opt/bds-ipv6fix.so ]]; then
+    export LD_PRELOAD=/opt/bds-ipv6fix.so
+  else
+    echo "WARNING: ENABLE_BDS_V6BIND_FIX=true but bds-ipv6fix.so is not available for this platform"
+  fi
 fi
 
 echo "Starting Bedrock server..."
