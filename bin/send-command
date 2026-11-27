@@ -2,16 +2,14 @@
 
 if [[ $* ]]; then
   # On arm64, the process exe is actually box64 since it in turn wraps the bedrock_server executable
-  if proc=$(find /proc -mindepth 2 -maxdepth 2 -name exe \( -lname '/data/bedrock_server-*' -o -lname /usr/local/bin/box64 \) -printf '%h' -quit); then
-    if [[ $proc ]]; then
-      echo "$@" > "$proc/fd/0"
-    else
-      echo "ERROR: unable to find bedrock server process"
-      exit 2
-    fi
+  # The lookup walks /proc, where some entries are unreadable depending on the container user.
+  # find then exits non-zero even when it matched and stopped early, so success is decided by
+  # the matched path rather than by the exit status.
+  proc=$(find /proc -mindepth 2 -maxdepth 2 -name exe \( -lname '/data/bedrock_server-*' -o -lname /usr/local/bin/box64 \) -printf '%h' -quit 2>/dev/null)
+  if [[ $proc ]]; then
+    echo "$@" > "$proc/fd/0"
   else
-    echo "ERROR: failed to search for bedrock server process"
+    echo "ERROR: unable to find bedrock server process"
     exit 2
   fi
 fi
-
